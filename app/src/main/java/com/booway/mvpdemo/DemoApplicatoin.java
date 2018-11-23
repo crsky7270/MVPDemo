@@ -1,5 +1,7 @@
 package com.booway.mvpdemo;
 
+import com.booway.mvpdemo.di.DaggerAppComponent;
+
 import dagger.android.AndroidInjector;
 import dagger.android.DaggerApplication;
 
@@ -10,6 +12,6 @@ import dagger.android.DaggerApplication;
 public class DemoApplicatoin extends DaggerApplication {
     @Override
     protected AndroidInjector<? extends DaggerApplication> applicationInjector() {
-        return null;
+        return DaggerAppComponent.builder().application(this).build();
     }
 }

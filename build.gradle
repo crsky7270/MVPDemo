@@ -50,6 +50,9 @@ ext {
     rxandroidVersion = '2.0.1'
     butterKnifeVersion = '8.8.1'
     rxBindingVersion = '2.0.0'
+    retrofitVersion='2.3.0'
+    okhttpVersion = "3.10.0"
+
 
 }
 

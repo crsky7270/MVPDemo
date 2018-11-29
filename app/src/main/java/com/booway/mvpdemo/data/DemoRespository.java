@@ -1,0 +1,106 @@
+package com.booway.mvpdemo.data;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
+
+import com.booway.mvpdemo.data.entities.Demo;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+/**
+ * Created by wandun on 2018/11/29.
+ */
+
+@Singleton
+public class DemoRespository implements DemoDataSource {
+
+    @NonNull
+    private final DemoDataSource mDemoLocalDataSource;
+
+    @NonNull
+    private final DemoDataSource mDemoRemoteDataSource;
+
+    @VisibleForTesting
+    @Nullable
+    Map<String, Demo> mCachedDemos;
+
+    @VisibleForTesting
+    boolean mCacheIsDirty = false;
+
+    @Inject
+    public DemoRespository(@Local DemoDataSource demoLocalDataSource,
+                           @Remote DemoDataSource demoRemoteDataSource) {
+        this.mDemoLocalDataSource = demoLocalDataSource;
+        this.mDemoRemoteDataSource = demoRemoteDataSource;
+    }
+
+    @Override
+    public Flowable<List<Demo>> getDemos() {
+        if (mCachedDemos != null && !mCacheIsDirty) {
+            return Flowable.fromIterable(mCachedDemos.values()).toList().toFlowable();
+        }
+
+//        Flowable<List<Demo>> remoteDemos=getAndCacheRemoteDemos();
+//        if (mCacheIsDirty) {
+//            return remoteDemos;
+//        }else{
+//
+//        }
+
+        Flowable<List<Demo>> localDemos = getAndCacheLocalDemos();
+        return localDemos;
+
+    }
+
+    private Flowable<List<Demo>> getAndCacheLocalDemos() {
+        return mDemoLocalDataSource.getDemos()
+                .flatMap(demos -> Flowable.fromIterable(demos)
+                        .doOnNext(demo -> mCachedDemos.put(demo.getId(), demo))
+                        .toList()
+                        .toFlowable());
+    }
+
+    private Flowable<List<Demo>> getAndCacheRemoteDemos() {
+        return mDemoRemoteDataSource.getDemos()
+                .flatMap(demos -> Flowable.fromIterable(demos).doOnNext(demo -> {
+                    mDemoLocalDataSource.saveDemo(demo);
+                    mCachedDemos.put(demo.getId(), demo);
+                }).toList().toFlowable())
+                .doOnComplete(() -> mCacheIsDirty = false);
+    }
+
+
+    @Override
+    public Flowable<Demo> getDemo(@NonNull String id) {
+
+        return null;
+    }
+
+    @Override
+    public Observable<Boolean> saveDemoCall(Demo demo) {
+        return  mDemoLocalDataSource.saveDemoCall(demo);
+    }
+
+    @Override
+    public void saveDemo(Demo demo) {
+        checkNotNull(demo);
+        mDemoLocalDataSource.saveDemo(demo);
+    }
+
+    @Override
+    public void deleteTask(@NonNull String id) {
+
+    }
+}

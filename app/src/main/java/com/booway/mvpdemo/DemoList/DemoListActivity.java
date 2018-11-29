@@ -8,17 +8,21 @@ import com.booway.mvpdemo.utils.ActivityUtils;
 
 import javax.inject.Inject;
 
-public class DemoListActivity extends AppCompatActivity {
+import dagger.android.support.DaggerAppCompatActivity;
+
+public class DemoListActivity extends DaggerAppCompatActivity {
     @Inject
     DemoListFragment mFragment;
 
-    @Inject
-    DemoListPresenter mPresenter;
+//    @Inject
+//    DemoListPresenter mPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_demo_list);
+
+
 
         DemoListFragment fragment =
                 (DemoListFragment) getSupportFragmentManager().findFragmentById(R.id.contentFrame);
@@ -26,6 +30,7 @@ public class DemoListActivity extends AppCompatActivity {
             fragment = mFragment;
         ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
                 fragment, R.id.contentFrame);
+
 
     }
 }

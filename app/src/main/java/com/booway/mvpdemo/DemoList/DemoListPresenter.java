@@ -1,5 +1,7 @@
 package com.booway.mvpdemo.DemoList;
 
+import android.support.annotation.Nullable;
+
 import javax.inject.Inject;
 
 /**
@@ -8,17 +10,20 @@ import javax.inject.Inject;
 
 final class DemoListPresenter implements DemoListContract.Presenter {
 
+    @Nullable
+    private DemoListContract.View mView;
+
     @Inject
     public DemoListPresenter() {
     }
 
     @Override
     public void takeView(DemoListContract.View view) {
-
+        mView = view;
     }
 
     @Override
     public void dropView() {
-
+        mView = null;
     }
 }

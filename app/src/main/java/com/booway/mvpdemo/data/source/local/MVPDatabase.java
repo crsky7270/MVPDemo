@@ -9,7 +9,7 @@ import com.booway.mvpdemo.data.entities.Demo;
  * Created by wandun on 2018/11/29.
  */
 
-@Database(entities = {Demo.class}, version = 1,exportSchema = false)
+@Database(entities = {Demo.class}, version = 2, exportSchema = false)
 public abstract class MVPDatabase extends RoomDatabase {
 
     public abstract DemoDao mDemoDao();

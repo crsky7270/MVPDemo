@@ -48,9 +48,9 @@ public class DemoRespository implements DemoDataSource {
 
     @Override
     public Flowable<List<Demo>> getDemos() {
-        if (mCachedDemos != null && !mCacheIsDirty) {
-            return Flowable.fromIterable(mCachedDemos.values()).toList().toFlowable();
-        }
+//        if (mCachedDemos != null && !mCacheIsDirty) {
+//            return Flowable.fromIterable(mCachedDemos.values()).toList().toFlowable();
+//        }
 
 //        Flowable<List<Demo>> remoteDemos=getAndCacheRemoteDemos();
 //        if (mCacheIsDirty) {
@@ -59,8 +59,8 @@ public class DemoRespository implements DemoDataSource {
 //
 //        }
 
-        Flowable<List<Demo>> localDemos = getAndCacheLocalDemos();
-        return localDemos;
+//        Flowable<List<Demo>> localDemos = getAndCacheLocalDemos();
+        return mDemoLocalDataSource.getDemos();
 
     }
 
@@ -84,13 +84,12 @@ public class DemoRespository implements DemoDataSource {
 
     @Override
     public Flowable<Demo> getDemo(@NonNull String id) {
-
-        return null;
+        return mDemoLocalDataSource.getDemo(id);
     }
 
     @Override
     public Observable<Boolean> saveDemoCall(Demo demo) {
-        return  mDemoLocalDataSource.saveDemoCall(demo);
+        return mDemoLocalDataSource.saveDemoCall(demo);
     }
 
     @Override

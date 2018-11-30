@@ -6,8 +6,16 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.booway.mvpdemo.R;
+import com.booway.mvpdemo.data.DemoRespository;
 import com.booway.mvpdemo.di.ActivityScoped;
 import com.booway.mvpdemo.retrofit.Demo;
 import com.booway.mvpdemo.retrofit.DemoListAPI;
@@ -15,15 +23,22 @@ import com.booway.mvpdemo.retrofit.DemoListPostAPI;
 import com.booway.mvpdemo.retrofit.DemoListService;
 import com.booway.mvpdemo.utils.SerializeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.Unbinder;
 import dagger.android.support.DaggerFragment;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by wandun on 2018/11/23.
@@ -32,78 +47,253 @@ import io.reactivex.schedulers.Schedulers;
 @ActivityScoped
 public class DemoListFragment extends DaggerFragment implements DemoListContract.View {
 
-    //    @Inject
-//    DemoListContract.Presenter mPresenter;
+    @Nullable
+    final static String ARGUMENT_EDIT_DEMO_ID = "DemoId";
+
+    @BindView(R.id.id)
+    EditText _idTxt;
+
+    @BindView(R.id.name)
+    EditText _nameTxt;
+
+    @BindView(R.id.save)
+    Button _saveBtn;
+
+    @BindView(R.id.get)
+    Button _getBtn;
+
+    @BindView(R.id.listView)
+    ListView _listView;
+
+    private Unbinder mUnbinder;
+
+    @Inject
+    DemoListContract.Presenter mPresenter;
+
+    private DemoListAdapter mDemoListAdapter;
+
     final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/demo.dat";
 
     @Inject
     public DemoListFragment() {
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        mPresenter.takeView(this);
+    }
+
+    @Override
+    public void onPause() {
+        mPresenter.dropView();
+        super.onPause();
+    }
+
+    DemoItemListener mItemListener = new DemoItemListener() {
+        @Override
+        public void onDemoClick(com.booway.mvpdemo.data.entities.Demo clickedDemo) {
+            Toast toast = Toast.makeText(getActivity(), clickedDemo.toString(), Toast.LENGTH_LONG);
+            toast.show();
+        }
+
+        @Override
+        public void onCompleteDemoClick(com.booway.mvpdemo.data.entities.Demo completedDemo) {
+
+        }
+
+        @Override
+        public void onActivateTaskClick(com.booway.mvpdemo.data.entities.Demo activatedDemo) {
+
+        }
+    };
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mDemoListAdapter = new DemoListAdapter(new ArrayList<>(), mItemListener);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        View root = inflater.inflate(R.layout.activity_demo_list_frag, container, false);
+        mUnbinder = ButterKnife.bind(this, root);
+        _listView.setAdapter(mDemoListAdapter);
+        return root;
+    }
+
+    @OnClick(R.id.get)
+    public void Get() {
+        mPresenter.getDemo(_idTxt.getText().toString());
+    }
+
+    @OnClick(R.id.save)
+    public void Save() {
+        com.booway.mvpdemo.data.entities.Demo demo = new com.booway.mvpdemo.data.entities.Demo(
+                _idTxt.getText().toString(), _nameTxt.getText().toString(),18
+        );
+        mPresenter.saveDemo(demo);
+    }
+
+    @OnClick(R.id.getList)
+    public void GetList() {
+        mPresenter.getDemoList();
+    }
+
+    private void TestSerializeWrite() {
         Demo demo = new Demo();
-//        demo.Id = 10002;
-//        demo.Name = "张三";
+        demo.Id = 10002;
+        demo.Name = "张三";
+        SerializeUtils.WriteToFile(demo, path);
+    }
+
+    private void TestSerializeRead() {
+        Demo demo;
         Object object = SerializeUtils.ReadFromFile(path);
         demo = (Demo) object;
-        //SerializeUtils.WriteToFile(demo, Environment.getExternalStorageDirectory().getAbsolutePath()+"/download/demo.dat");
-//        DemoListPostAPI service = DemoListService.createDemoListPostService("demo");
-//        service.postDemos()
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribeWith(new Observer<String>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onNext(String s) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
+    }
 
+    private void TestGetHttpMethod() {
+        DemoListAPI service = DemoListService.createDemoListService("demo");
+        service.getDemoList()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new Observer<List<String>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
 
-        //        DemoListAPI service = DemoListService.createDemoListService("demo");
-//        service.getDemoList()
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribeWith(new Observer<List<String>>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onNext(List<String> strings) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
-        View root = inflater.inflate(R.layout.activity_demo_list_frag, container, false);
+                    }
 
+                    @Override
+                    public void onNext(List<String> strings) {
 
-        return root;
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    private void TestPostMethod() {
+        DemoListPostAPI service = DemoListService.createDemoListPostService("demo");
+        service.postDemos()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    @Override
+    public void showDemoList(List<com.booway.mvpdemo.data.entities.Demo> demos) {
+        mDemoListAdapter.replaceData(demos);
+        _listView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showDemo(com.booway.mvpdemo.data.entities.Demo demo) {
+        _idTxt.setText(demo.getId());
+        _nameTxt.setText(demo.getName());
+    }
+
+    @Override
+    public void showResult(String msg) {
+        Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    public interface DemoItemListener {
+
+        void onDemoClick(com.booway.mvpdemo.data.entities.Demo clickedDemo);
+
+        void onCompleteDemoClick(com.booway.mvpdemo.data.entities.Demo completedDemo);
+
+        void onActivateTaskClick(com.booway.mvpdemo.data.entities.Demo activatedDemo);
+    }
+
+    private static class DemoListAdapter extends BaseAdapter {
+
+        private List<com.booway.mvpdemo.data.entities.Demo> mDemoList;
+        private DemoItemListener mDemoItemListener;
+
+        public DemoListAdapter(List<com.booway.mvpdemo.data.entities.Demo> demos,
+                               DemoItemListener itemListener) {
+            setList(demos);
+            this.mDemoItemListener = itemListener;
+        }
+
+        private void setList(List<com.booway.mvpdemo.data.entities.Demo> demoList) {
+            mDemoList = checkNotNull(demoList);
+        }
+
+        public void replaceData(List<com.booway.mvpdemo.data.entities.Demo> demos) {
+            setList(demos);
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public int getCount() {
+            return mDemoList.size();
+        }
+
+        @Override
+        public com.booway.mvpdemo.data.entities.Demo getItem(int position) {
+            return mDemoList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            View rowView = view;
+            if (rowView == null) {
+                LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+                rowView = inflater.inflate(R.layout.demo_list_item, viewGroup, false);
+            }
+
+            final com.booway.mvpdemo.data.entities.Demo demo = getItem(i);
+
+            TextView textViewId = rowView.findViewById(R.id.id);
+            TextView textViewName = rowView.findViewById(R.id.name);
+            textViewId.setText(demo.getId());
+            textViewName.setText(demo.getName());
+
+            rowView.setOnClickListener((v) -> {
+                mDemoItemListener.onDemoClick(demo);
+            });
+
+            return rowView;
+        }
     }
 }

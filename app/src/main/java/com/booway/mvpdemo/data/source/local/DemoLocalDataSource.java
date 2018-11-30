@@ -42,6 +42,7 @@ public class DemoLocalDataSource implements DemoDataSource {
         Flowable<List<Demo>> flowable = Flowable.create(emitter -> {
             List<Demo> demoList = mDemoDao.getDemos();
             emitter.onNext(demoList);
+//            emitter.onComplete();
         }, BackpressureStrategy.BUFFER);
         return flowable;
     }
@@ -51,6 +52,7 @@ public class DemoLocalDataSource implements DemoDataSource {
         Flowable<Demo> flowable = Flowable.create(emitter -> {
             Demo demo = mDemoDao.getDemo(id);
             emitter.onNext(demo);
+            emitter.onComplete();
         }, BackpressureStrategy.BUFFER);
         return flowable;
     }

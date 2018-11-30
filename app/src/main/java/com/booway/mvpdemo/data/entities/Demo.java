@@ -27,9 +27,13 @@ public final class Demo {
     @ColumnInfo(name = "name")
     private final String mName;
 
+    @Nullable
+    @ColumnInfo(name = "age")
+    private final int mAge;
+
     @Ignore
-    public Demo(@Nullable String name) {
-        this(UUID.randomUUID().toString(), name);
+    public Demo(@Nullable String name, @Nullable int age) {
+        this(UUID.randomUUID().toString(), name,age);
     }
 
     /**
@@ -37,9 +41,10 @@ public final class Demo {
      * @param name
      */
 
-    public Demo(@NonNull String id, @Nullable String name) {
+    public Demo(@NonNull String id, @Nullable String name,@Nullable int age) {
         this.mId = id;
         this.mName = name;
+        this.mAge = age;
     }
 
     @Nullable
@@ -73,5 +78,10 @@ public final class Demo {
     @Override
     public String toString() {
         return "Demo,id:" + mId + ",name:" + mName;
+    }
+
+    @Nullable
+    public int getAge() {
+        return mAge;
     }
 }

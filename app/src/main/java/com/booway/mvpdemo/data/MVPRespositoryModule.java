@@ -1,7 +1,11 @@
 package com.booway.mvpdemo.data;
 
 import android.app.Application;
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Room;
+import android.arch.persistence.room.migration.Migration;
+import android.os.Environment;
+import android.support.annotation.NonNull;
 
 import com.booway.mvpdemo.data.source.local.DemoDao;
 import com.booway.mvpdemo.data.source.local.DemoLocalDataSource;
@@ -28,6 +32,8 @@ abstract public class MVPRespositoryModule {
 
     private static final int THREAD_COUNT = 3;
 
+    final static String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/mvp.db";
+
     @Singleton
     @Binds
     @Local
@@ -41,9 +47,22 @@ abstract public class MVPRespositoryModule {
     @Singleton
     @Provides
     static MVPDatabase provideDb(Application context) {
+        String dbpath = Environment.getExternalStorageDirectory().getAbsolutePath()
+                + "/download/mvp.db";
         return Room.databaseBuilder(context.getApplicationContext(),
-                MVPDatabase.class, "MVP.db").build();
+                MVPDatabase.class, dbpath)
+                .addMigrations(MIGRATION_1_2)
+                .build();
+
     }
+
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE Demo ADD COLUMN age1 INTEGER");
+            database.execSQL("UPDATE Demo SET age1=18");
+        }
+    };
 
     @Singleton
     @Provides
@@ -57,7 +76,5 @@ abstract public class MVPRespositoryModule {
         return new AppExecutors(new DiskIOThreadExecutor(),
                 Executors.newFixedThreadPool(THREAD_COUNT),
                 new AppExecutors.MainThreadExecutor());
-
     }
-
 }

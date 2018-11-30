@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">MVPDemo</string>
+    <string name="getDemo">获取Demo</string>
+    <string name="saveDemo">保存Demo</string>
+    <string name="getList">获取列表</string>
 </resources>

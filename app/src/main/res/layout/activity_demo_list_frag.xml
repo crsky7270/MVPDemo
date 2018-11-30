@@ -1,6 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/id"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:hint="enter id" />
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:hint="enter name" />
+
+    <Button
+        android:id="@+id/save"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/saveDemo" />
+
+    <Button
+        android:id="@+id/get"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/getDemo" />
+
+    <Button
+        android:id="@+id/getList"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/getList"/>
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 
 </LinearLayout>

@@ -23,7 +23,7 @@ public interface DemoListContract {
 
     interface Presenter extends BasePresenter<View> {
 
-        void getDemoList();
+        void getDemoList(boolean forceUpdate);
 
         void getDemo(String id);
 

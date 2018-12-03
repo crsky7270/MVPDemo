@@ -48,16 +48,18 @@ final class DemoListPresenter implements DemoListContract.Presenter {
 
     @Override
     public void takeView(DemoListContract.View view) {
-        mView = view;
+        this.mView = view;
+//        getDemoList(false);
     }
 
     @Override
     public void dropView() {
         mView = null;
+        mCompositeDisposable.clear();
     }
 
     @Override
-    public void getDemoList() {
+    public void getDemoList(boolean forceUpdate) {
         mCompositeDisposable.add(
                 mDemoRespository.getDemos()
                         .subscribeOn(Schedulers.io())

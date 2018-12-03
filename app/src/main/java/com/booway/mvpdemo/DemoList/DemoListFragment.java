@@ -33,9 +33,13 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import dagger.android.support.DaggerFragment;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -82,6 +86,12 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     public void onResume() {
         super.onResume();
         mPresenter.takeView(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mUnbinder.unbind();
     }
 
     @Override
@@ -133,14 +143,14 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     @OnClick(R.id.save)
     public void Save() {
         com.booway.mvpdemo.data.entities.Demo demo = new com.booway.mvpdemo.data.entities.Demo(
-                _idTxt.getText().toString(), _nameTxt.getText().toString(),18
+                _idTxt.getText().toString(), _nameTxt.getText().toString(), 18
         );
         mPresenter.saveDemo(demo);
     }
 
     @OnClick(R.id.getList)
     public void GetList() {
-        mPresenter.getDemoList();
+        mPresenter.getDemoList(true);
     }
 
     private void TestSerializeWrite() {

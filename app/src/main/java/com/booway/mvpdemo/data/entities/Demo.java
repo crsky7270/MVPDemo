@@ -33,7 +33,7 @@ public final class Demo {
 
     @Ignore
     public Demo(@Nullable String name, @Nullable int age) {
-        this(UUID.randomUUID().toString(), name,age);
+        this(UUID.randomUUID().toString(), name, age);
     }
 
     /**
@@ -41,7 +41,7 @@ public final class Demo {
      * @param name
      */
 
-    public Demo(@NonNull String id, @Nullable String name,@Nullable int age) {
+    public Demo(@NonNull String id, @Nullable String name, @Nullable int age) {
         this.mId = id;
         this.mName = name;
         this.mAge = age;
@@ -84,4 +84,5 @@ public final class Demo {
     public int getAge() {
         return mAge;
     }
+
 }

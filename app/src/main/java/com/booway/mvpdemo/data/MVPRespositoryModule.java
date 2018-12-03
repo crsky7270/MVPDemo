@@ -59,8 +59,8 @@ abstract public class MVPRespositoryModule {
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            database.execSQL("ALTER TABLE Demo ADD COLUMN age1 INTEGER");
-            database.execSQL("UPDATE Demo SET age1=18");
+            database.execSQL("ALTER TABLE Demo ADD COLUMN age INTEGER NOT NULL DEFAULT 18");
+//            database.execSQL("UPDATE Demo SET age1=18");
         }
     };
 

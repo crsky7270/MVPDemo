@@ -14,9 +14,11 @@ import javax.inject.Singleton;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Single;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -38,23 +40,27 @@ public class DemoLocalDataSource implements DemoDataSource {
     }
 
     @Override
-    public Flowable<List<Demo>> getDemos() {
-        Flowable<List<Demo>> flowable = Flowable.create(emitter -> {
-            List<Demo> demoList = mDemoDao.getDemos();
-            emitter.onNext(demoList);
-//            emitter.onComplete();
-        }, BackpressureStrategy.BUFFER);
-        return flowable;
+    public Maybe<List<Demo>> getDemos() {
+
+
+//        Flowable<List<Demo>> flowable = Flowable.create(emitter -> {
+//            List<Demo> demoList = mDemoDao.getDemos();
+//            emitter.onNext(demoList);
+////            emitter.onComplete();
+//        }, BackpressureStrategy.BUFFER);
+        return mDemoDao.getDemos();
     }
 
     @Override
-    public Flowable<Demo> getDemo(@NonNull String id) {
-        Flowable<Demo> flowable = Flowable.create(emitter -> {
-            Demo demo = mDemoDao.getDemo(id);
-            emitter.onNext(demo);
-            emitter.onComplete();
-        }, BackpressureStrategy.BUFFER);
-        return flowable;
+    public Single<Demo> getDemo(@NonNull String id) {
+
+
+//        Flowable<Demo> flowable = Flowable.create(emitter -> {
+//            Demo demo = mDemoDao.getDemo(id);
+//            emitter.onNext(demo);
+//            emitter.onComplete();
+//        }, BackpressureStrategy.BUFFER);
+        return mDemoDao.getDemo(id);
     }
 
     @Override

@@ -48,6 +48,9 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rootProject.rxjavaVersion"
     implementation "io.reactivex.rxjava2:rxandroid:$rootProject.rxandroidVersion"
 
+    // https://mvnrepository.com/artifact/android.arch.persistence.room/rxjava2
+    compile group: 'android.arch.persistence.room', name: 'rxjava2', version: '1.0.0'
+
     //RxBinding
     compile "com.jakewharton.rxbinding2:rxbinding:$rootProject.rxBindingVersion"
 

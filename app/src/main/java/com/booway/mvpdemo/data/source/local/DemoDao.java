@@ -10,6 +10,10 @@ import com.booway.mvpdemo.data.entities.Demo;
 
 import java.util.List;
 
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+
 /**
  * Created by wandun on 2018/11/29.
  */
@@ -18,10 +22,10 @@ import java.util.List;
 public interface DemoDao {
 
     @Query("SELECT * FROM Demo")
-    List<Demo> getDemos();
+    Maybe<List<Demo>> getDemos();
 
     @Query("SELECT * FROM Demo WHERE id =:did")
-    Demo getDemo(String did);
+    Single<Demo> getDemo(String did);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertDemo(Demo demo);

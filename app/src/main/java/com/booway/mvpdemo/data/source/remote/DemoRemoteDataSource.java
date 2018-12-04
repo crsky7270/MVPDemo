@@ -11,7 +11,9 @@ import java.util.List;
 import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 
 /**
  * Created by wandun on 2018/11/29.
@@ -24,12 +26,12 @@ public class DemoRemoteDataSource implements DemoDataSource {
     }
 
     @Override
-    public Flowable<List<Demo>> getDemos() {
+    public Maybe<List<Demo>> getDemos() {
         return null;
     }
 
     @Override
-    public Flowable<Demo> getDemo(@NonNull String id) {
+    public Single<Demo> getDemo(@NonNull String id) {
         return null;
     }
 

@@ -13,9 +13,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Single;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -47,7 +49,7 @@ public class DemoRespository implements DemoDataSource {
     }
 
     @Override
-    public Flowable<List<Demo>> getDemos() {
+    public Maybe<List<Demo>> getDemos() {
 //        if (mCachedDemos != null && !mCacheIsDirty) {
 //            return Flowable.fromIterable(mCachedDemos.values()).toList().toFlowable();
 //        }
@@ -64,26 +66,28 @@ public class DemoRespository implements DemoDataSource {
 
     }
 
-    private Flowable<List<Demo>> getAndCacheLocalDemos() {
-        return mDemoLocalDataSource.getDemos()
-                .flatMap(demos -> Flowable.fromIterable(demos)
-                        .doOnNext(demo -> mCachedDemos.put(demo.getId(), demo))
-                        .toList()
-                        .toFlowable());
+    private Maybe<List<Demo>> getAndCacheLocalDemos() {
+        return null;
+//        return mDemoLocalDataSource.getDemos()
+//                .flatMap(demos -> Flowable.fromIterable(demos)
+//                        .doOnNext(demo -> mCachedDemos.put(demo.getId(), demo))
+//                        .toList()
+//                        .toFlowable());
     }
 
     private Flowable<List<Demo>> getAndCacheRemoteDemos() {
-        return mDemoRemoteDataSource.getDemos()
-                .flatMap(demos -> Flowable.fromIterable(demos).doOnNext(demo -> {
-                    mDemoLocalDataSource.saveDemo(demo);
-                    mCachedDemos.put(demo.getId(), demo);
-                }).toList().toFlowable())
-                .doOnComplete(() -> mCacheIsDirty = false);
+        return null;
+//        return mDemoRemoteDataSource.getDemos()
+//                .flatMap(demos -> Flowable.fromIterable(demos).doOnNext(demo -> {
+//                    mDemoLocalDataSource.saveDemo(demo);
+//                    mCachedDemos.put(demo.getId(), demo);
+//                }).toList().toFlowable())
+//                .doOnComplete(() -> mCacheIsDirty = false);
     }
 
 
     @Override
-    public Flowable<Demo> getDemo(@NonNull String id) {
+    public Single<Demo> getDemo(@NonNull String id) {
         return mDemoLocalDataSource.getDemo(id);
     }
 

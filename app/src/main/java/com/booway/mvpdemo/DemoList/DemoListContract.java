@@ -2,6 +2,7 @@ package com.booway.mvpdemo.DemoList;
 
 import com.booway.mvpdemo.BasePresenter;
 import com.booway.mvpdemo.BaseView;
+import com.booway.mvpdemo.data.entities.Book;
 import com.booway.mvpdemo.data.entities.Demo;
 
 import java.util.List;
@@ -28,6 +29,10 @@ public interface DemoListContract {
         void getDemo(String id);
 
         void saveDemo(Demo demo);
+
+        void saveBook(Book book);
+
+        void getUnionList();
 
     }
 

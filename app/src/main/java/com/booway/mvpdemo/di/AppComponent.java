@@ -3,6 +3,7 @@ package com.booway.mvpdemo.di;
 import android.app.Application;
 
 import com.booway.mvpdemo.DemoApplicatoin;
+import com.booway.mvpdemo.data.BookRespository;
 import com.booway.mvpdemo.data.DemoRespository;
 import com.booway.mvpdemo.data.MVPRespositoryModule;
 
@@ -25,6 +26,8 @@ import dagger.android.support.AndroidSupportInjectionModule;
 public interface AppComponent extends AndroidInjector<DemoApplicatoin> {
 
     DemoRespository getDemoRespository();
+
+    BookRespository getBookRespository();
 
     @Component.Builder
     interface Builder {

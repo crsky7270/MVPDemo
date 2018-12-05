@@ -3,6 +3,7 @@ package com.booway.mvpdemo.data;
 import android.support.annotation.NonNull;
 
 import com.booway.mvpdemo.data.entities.Demo;
+import com.booway.mvpdemo.data.entities.InnerJoinResult;
 
 import java.util.List;
 
@@ -26,5 +27,7 @@ public interface DemoDataSource {
     void saveDemo(Demo demo);
 
     void deleteTask(@NonNull String id);
+
+    Maybe<List<InnerJoinResult>> getRelationFromDemo();
 
 }

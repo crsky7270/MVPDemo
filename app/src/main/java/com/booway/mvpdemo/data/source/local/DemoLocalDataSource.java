@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.data.DemoDataSource;
 import com.booway.mvpdemo.data.Local;
+import com.booway.mvpdemo.data.entities.InnerJoinResult;
 import com.booway.mvpdemo.utils.AppExecutors;
 
 import java.util.List;
@@ -53,8 +54,6 @@ public class DemoLocalDataSource implements DemoDataSource {
 
     @Override
     public Single<Demo> getDemo(@NonNull String id) {
-
-
 //        Flowable<Demo> flowable = Flowable.create(emitter -> {
 //            Demo demo = mDemoDao.getDemo(id);
 //            emitter.onNext(demo);
@@ -84,5 +83,12 @@ public class DemoLocalDataSource implements DemoDataSource {
     @Override
     public void deleteTask(@NonNull String id) {
         mDemoDao.deleteDemoById(id);
+    }
+
+    @Override
+    public Maybe<List<InnerJoinResult>> getRelationFromDemo() {
+
+
+        return mDemoDao.getRelationFromDemo();
     }
 }

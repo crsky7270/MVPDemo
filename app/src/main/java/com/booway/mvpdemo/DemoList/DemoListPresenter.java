@@ -4,8 +4,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.view.menu.MenuPresenter;
 
+import com.booway.mvpdemo.data.BookRespository;
 import com.booway.mvpdemo.data.DemoRespository;
+import com.booway.mvpdemo.data.entities.Book;
 import com.booway.mvpdemo.data.entities.Demo;
+import com.booway.mvpdemo.data.entities.InnerJoinResult;
 import com.booway.mvpdemo.data.source.remote.DemoRemoteDataSource;
 import com.booway.mvpdemo.di.ActivityScoped;
 import com.booway.mvpdemo.utils.AppExecutors;
@@ -14,6 +17,8 @@ import com.booway.mvpdemo.utils.DiskIOThreadExecutor;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -31,8 +36,9 @@ final class DemoListPresenter implements DemoListContract.Presenter {
     @Nullable
     private DemoListContract.View mView;
 
-
     private DemoRespository mDemoRespository;
+
+    private BookRespository mBookRespository;
 
 //    @Nullable
 //    private String mId;
@@ -41,9 +47,10 @@ final class DemoListPresenter implements DemoListContract.Presenter {
     private CompositeDisposable mCompositeDisposable;
 
     @Inject
-    public DemoListPresenter(DemoRespository respository) {
+    public DemoListPresenter(DemoRespository respository, BookRespository bookRespository) {
         this.mDemoRespository = respository;
         mCompositeDisposable = new CompositeDisposable();
+        mBookRespository = bookRespository;
     }
 
     @Override
@@ -97,6 +104,30 @@ final class DemoListPresenter implements DemoListContract.Presenter {
         try {
             mDemoRespository.saveDemo(demo);
             mView.showResult("save success!!!");
+        } catch (Exception ex) {
+            mView.showResult(ex.getMessage());
+        }
+    }
+
+    @Override
+    public void saveBook(Book book) {
+        try {
+            mBookRespository.saveBook(book);
+        } catch (Exception ex) {
+            mView.showResult("save book failed:" + ex.getMessage());
+        }
+
+    }
+
+    @Override
+    public void getUnionList() {
+        try {
+            mDemoRespository.getRelationFromDemo()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(result -> {
+
+                    });
         } catch (Exception ex) {
             mView.showResult(ex.getMessage());
         }

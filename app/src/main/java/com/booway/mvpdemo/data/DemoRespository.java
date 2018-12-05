@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 
 import com.booway.mvpdemo.data.entities.Demo;
+import com.booway.mvpdemo.data.entities.InnerJoinResult;
 
 import java.util.List;
 import java.util.Map;
@@ -105,5 +106,10 @@ public class DemoRespository implements DemoDataSource {
     @Override
     public void deleteTask(@NonNull String id) {
 
+    }
+
+    @Override
+    public Maybe<List<InnerJoinResult>> getRelationFromDemo() {
+        return mDemoLocalDataSource.getRelationFromDemo();
     }
 }

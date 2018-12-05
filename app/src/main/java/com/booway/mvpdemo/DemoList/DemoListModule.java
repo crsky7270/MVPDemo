@@ -2,6 +2,7 @@ package com.booway.mvpdemo.DemoList;
 
 import android.support.annotation.Nullable;
 
+import com.booway.mvpdemo.BookList.BookListContract;
 import com.booway.mvpdemo.di.ActivityScoped;
 import com.booway.mvpdemo.di.FragmentScoped;
 

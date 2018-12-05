@@ -7,6 +7,7 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
 import com.booway.mvpdemo.data.entities.Demo;
+import com.booway.mvpdemo.data.entities.InnerJoinResult;
 
 import java.util.List;
 
@@ -35,4 +36,7 @@ public interface DemoDao {
 
     @Query("DELETE FROM DEMO WHERE id =:did")
     void deleteDemoById(String did);
+
+    @Query("SELECT demo_Id,Book.name,demo.age from demo INNER JOIN Book ON Demo.id = Book.demo_id")
+    Maybe<List<InnerJoinResult>> getRelationFromDemo();
 }

@@ -23,6 +23,12 @@
         android:text="@string/saveDemo" />
 
     <Button
+        android:id="@+id/saveBook"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/saveBook"/>
+
+    <Button
         android:id="@+id/get"
         android:layout_width="match_parent"
         android:layout_height="36dp"
@@ -33,6 +39,11 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:text="@string/getList"/>
+    <Button
+        android:id="@+id/getUnionList"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/getUnioList"/>
 
     <ListView
         android:id="@+id/listView"

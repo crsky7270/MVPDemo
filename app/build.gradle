@@ -49,7 +49,10 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxandroid:$rootProject.rxandroidVersion"
 
     // https://mvnrepository.com/artifact/android.arch.persistence.room/rxjava2
-    compile group: 'android.arch.persistence.room', name: 'rxjava2', version: '1.0.0'
+    implementation "android.arch.persistence.room:rxjava2:$rootProject.roomVersion"
+
+    // Testing support
+    androidTestImplementation "android.arch.core:core-testing:$rootProject.roomVersion"
 
     //RxBinding
     compile "com.jakewharton.rxbinding2:rxbinding:$rootProject.rxBindingVersion"
@@ -62,10 +65,22 @@ dependencies {
     //Retrofit
     compile "com.squareup.retrofit2:retrofit:$rootProject.retrofitVersion"
     compile "com.squareup.retrofit2:converter-gson:$rootProject.retrofitVersion"
-
     //OKHTTP
     compile "com.squareup.okhttp3:okhttp:$rootProject.okhttpVersion"
     compile "com.squareup.okhttp3:okhttp-urlconnection:$rootProject.okhttpVersion"
+
+    //dependencies for local unit test
+    testCompile "junit:junit:$rootProject.ext.junitVersion"
+//    testCompile "org.mockito:mockito-all:$rootProject.ext.mockitoVersion"
+//    testCompile "org.hamcrest:hamcrest-all:$rootProject.ext.hamcrestVersion"
+
+    //Android Testing
+    androidTestCompile "com.android.support.test:runner:$rootProject.ext.runnerVersion"
+    androidTestCompile "com.android.support.test:rules:$rootProject.ext.rulesVersion"
+
+    // https://mvnrepository.com/artifact/androidx.room/room-testing
+//    compile group: 'androidx.room', name: 'room-testing', version: '2.0.0'
+//    androidTestCompile "org.mockito:mockito-core:$rootProject.ext.mockitoVersion"
 
 
 }

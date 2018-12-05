@@ -14,8 +14,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.booway.mvpdemo.BookList.BookListContract;
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.data.DemoRespository;
+import com.booway.mvpdemo.data.entities.Book;
 import com.booway.mvpdemo.di.ActivityScoped;
 import com.booway.mvpdemo.retrofit.Demo;
 import com.booway.mvpdemo.retrofit.DemoListAPI;
@@ -73,6 +75,9 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
 
     @Inject
     DemoListContract.Presenter mPresenter;
+
+    @Inject
+    BookListContract.Presenter mBookPresenter;
 
     private DemoListAdapter mDemoListAdapter;
 
@@ -148,9 +153,21 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         mPresenter.saveDemo(demo);
     }
 
+    @OnClick(R.id.saveBook)
+    public void saveBook() {
+        Book book = new Book(_nameTxt.getText().toString(), _idTxt.getText().toString(),
+                _idTxt.getText().toString());
+        mBookPresenter.saveBook(book);
+    }
+
     @OnClick(R.id.getList)
     public void GetList() {
         mPresenter.getDemoList(true);
+    }
+
+    @OnClick(R.id.getUnionList)
+    public void getUnionList() {
+        mPresenter.getUnionList();
     }
 
     private void TestSerializeWrite() {

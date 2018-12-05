@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.booway.mvpdemo.data.DemoDataSource;
 import com.booway.mvpdemo.data.entities.Demo;
+import com.booway.mvpdemo.data.entities.InnerJoinResult;
 
 import java.util.List;
 
@@ -46,5 +47,10 @@ public class FakeDemoRemoteDataSource implements DemoDataSource {
     @Override
     public void deleteTask(@NonNull String id) {
 
+    }
+
+    @Override
+    public Maybe<List<InnerJoinResult>> getRelationFromDemo() {
+        return null;
     }
 }

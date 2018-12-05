@@ -9,7 +9,9 @@ import java.util.concurrent.Executor;
 import javax.inject.Singleton;
 
 /**
- * Created by wandun on 2018/11/29.
+ * @author wandun
+ * @date 2018/12/5
+ * @desc 线程处理
  */
 
 @Singleton

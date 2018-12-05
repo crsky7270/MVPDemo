@@ -23,7 +23,7 @@ import com.booway.mvpdemo.retrofit.Demo;
 import com.booway.mvpdemo.retrofit.DemoListAPI;
 import com.booway.mvpdemo.retrofit.DemoListPostAPI;
 import com.booway.mvpdemo.retrofit.DemoListService;
-import com.booway.mvpdemo.utils.SerializeUtils;
+import com.booway.mvpdemo.utils.SerializableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -174,13 +174,22 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         Demo demo = new Demo();
         demo.Id = 10002;
         demo.Name = "张三";
-        SerializeUtils.WriteToFile(demo, path);
+        try {
+            SerializableUtils.serializeData(getActivity(), path, demo);
+        } catch (Exception ex) {
+
+        }
+
     }
 
     private void TestSerializeRead() {
         Demo demo;
-        Object object = SerializeUtils.ReadFromFile(path);
-        demo = (Demo) object;
+        try {
+            Object object = SerializableUtils.deserializeData(getActivity(), path);
+            demo = (Demo) object;
+        } catch (Exception ex) {
+
+        }
     }
 
     private void TestGetHttpMethod() {

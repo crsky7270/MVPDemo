@@ -1,5 +1,8 @@
 package com.booway.mvpdemo.DemoList;
 
+import android.app.Activity;
+import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
@@ -15,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.booway.mvpdemo.BookList.BookListContract;
+import com.booway.mvpdemo.DemoApplicatoin;
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.data.DemoRespository;
 import com.booway.mvpdemo.data.entities.Book;
@@ -174,12 +178,14 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         Demo demo = new Demo();
         demo.Id = 10002;
         demo.Name = "张三";
+
+
+
         try {
             SerializableUtils.serializeData(getActivity(), path, demo);
         } catch (Exception ex) {
 
         }
-
     }
 
     private void TestSerializeRead() {

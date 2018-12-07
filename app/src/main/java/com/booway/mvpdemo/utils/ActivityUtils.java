@@ -14,8 +14,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 
 public class ActivityUtils {
+    public static Fragment currentFragment;
 
-    /** add fragment to activity
+    /**
+     * add fragment to activity
+     *
      * @param fragmentManager
      * @param fragment
      * @param frameId
@@ -28,4 +31,30 @@ public class ActivityUtils {
         transaction.add(frameId, fragment);
         transaction.commit();
     }
+
+    /**
+     * switch fragment in activity
+     *
+     * @param fragmentManager
+     * @param targetFragment
+     * @param frameId
+     */
+    public static void switchFragment(@NonNull FragmentManager fragmentManager,
+                                      @NonNull Fragment targetFragment,
+                                      int frameId) {
+        checkNotNull(fragmentManager);
+        checkNotNull(targetFragment);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        if (!targetFragment.isAdded()) {
+            if (currentFragment != null) {
+                transaction.hide(currentFragment);
+            }
+            transaction.add(frameId, targetFragment, targetFragment.getClass().getName());
+        } else {
+            transaction.hide(currentFragment).show(targetFragment);
+        }
+        currentFragment = targetFragment;
+        transaction.commit();
+    }
+
 }

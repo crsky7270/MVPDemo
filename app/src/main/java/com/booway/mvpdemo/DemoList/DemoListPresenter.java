@@ -18,12 +18,25 @@ import com.booway.mvpdemo.utils.DiskIOThreadExecutor;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.SimpleTimeZone;
 
 import javax.inject.Inject;
 
+import io.reactivex.Flowable;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.Maybe;
+import io.reactivex.MaybeSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Function3;
 import io.reactivex.internal.util.AppendOnlyLinkedArrayList;
 import io.reactivex.schedulers.Schedulers;
 
@@ -131,5 +144,39 @@ final class DemoListPresenter implements DemoListContract.Presenter {
         } catch (Exception ex) {
             mView.showResult(ex.getMessage());
         }
+    }
+
+    @Override
+    public void getRxjavaUnionList() {
+        mCompositeDisposable.add(
+                mDemoRespository.getDemos()
+                        .flatMap(demos -> mBookRespository.getBooks())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+
+                        })
+        );
+
+//        Flowable sourceA = Flowable.just(mBookRespository.getBooks());
+//        Flowable sourceB = Flowable.just(mDemoRespository.getDemos());
+//
+//
+//        Flowable.combineLatest(
+//                sourceA,
+//                sourceB,
+//                (BiFunction<List<Book>, List<Demo>, List<Object>>) (books, demos) -> {
+//                    List<Object> lst = new ArrayList<Object>() {
+//                    };
+//                    lst.add(new Object());
+//                    lst.add(new Object());
+//                    return lst;
+//                }
+//        ).subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(result -> {
+//
+//                });
+
     }
 }

@@ -6,6 +6,7 @@ import com.booway.mvpdemo.data.entities.Book;
 import com.booway.mvpdemo.data.source.local.BookLocalDataSource;
 
 import java.util.List;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -28,7 +29,7 @@ public class BookRespository implements BookDataSource {
 
     @Override
     public Maybe<List<Book>> getBooks() {
-        return null;
+        return mBookLocalDataSource.getBooks();
     }
 
     @Override

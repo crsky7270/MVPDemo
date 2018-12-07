@@ -5,4 +5,5 @@
     <string name="getList">获取列表</string>
     <string name="saveBook">保存Book</string>
     <string name="getUnioList">获取关联列表</string>
+    <string name="getRxjavaUnionList">RxjavaUnion获取</string>
 </resources>

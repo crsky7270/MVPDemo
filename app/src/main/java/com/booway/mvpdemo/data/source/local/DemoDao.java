@@ -25,6 +25,9 @@ public interface DemoDao {
     @Query("SELECT * FROM Demo")
     Maybe<List<Demo>> getDemos();
 
+    @Query("SELECT id FROM Demo")
+    List<String> getDemoIds();
+
     @Query("SELECT * FROM Demo WHERE id =:did")
     Single<Demo> getDemo(String did);
 

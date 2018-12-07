@@ -34,7 +34,7 @@ public class BookLocalDataSource implements BookDataSource {
 
     @Override
     public Maybe<List<Book>> getBooks() {
-        return null;
+        return mBookDao.getBooks();
     }
 
     @Override

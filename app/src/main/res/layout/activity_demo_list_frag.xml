@@ -44,6 +44,11 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:text="@string/getUnioList"/>
+    <Button
+        android:id="@+id/getRxjavaUnionList"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/getRxjavaUnionList"/>
 
     <ListView
         android:id="@+id/listView"

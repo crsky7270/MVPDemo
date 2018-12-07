@@ -34,6 +34,7 @@ public interface DemoListContract {
 
         void getUnionList();
 
+        void getRxjavaUnionList();
     }
 
 }

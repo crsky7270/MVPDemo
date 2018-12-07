@@ -28,6 +28,8 @@ import com.booway.mvpdemo.retrofit.DemoListAPI;
 import com.booway.mvpdemo.retrofit.DemoListPostAPI;
 import com.booway.mvpdemo.retrofit.DemoListService;
 import com.booway.mvpdemo.utils.SerializableUtils;
+import com.booway.mvpdemo.utils.StringUtils;
+import com.booway.mvpdemo.utils.ToastUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +97,14 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     public void onResume() {
         super.onResume();
         mPresenter.takeView(this);
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+//        Toast.makeText(getActivity(), "hidden changed:" +
+//                (hidden ? "0" : "1"), Toast.LENGTH_SHORT).show();
+        ToastUtils.showToast("hidden changed:" + (hidden ? "0" : "1"));
     }
 
     @Override
@@ -174,11 +184,15 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         mPresenter.getUnionList();
     }
 
+    @OnClick(R.id.getRxjavaUnionList)
+    public void getRxjavaUnionList() {
+        mPresenter.getRxjavaUnionList();
+    }
+
     private void TestSerializeWrite() {
         Demo demo = new Demo();
         demo.Id = 10002;
         demo.Name = "张三";
-
 
 
         try {

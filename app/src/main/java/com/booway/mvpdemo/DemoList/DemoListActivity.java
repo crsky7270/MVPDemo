@@ -1,8 +1,13 @@
 package com.booway.mvpdemo.DemoList;
 
+import android.content.Context;
+import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.AttributeSet;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -44,17 +49,50 @@ public class DemoListActivity extends DaggerAppCompatActivity {
             fragment = mFragment;
 //        ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
 //                fragment, R.id.contentFrame);
-        ActivityUtils.switchFragment(getSupportFragmentManager(), fragment, R.id.contentFrame);
+        ActivityUtils.switchFragment(DemoListActivity.class,
+                getSupportFragmentManager(), fragment, R.id.contentFrame);
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+
+    @Override
+    public View onCreateView(String name, Context context, AttributeSet attrs) {
+        return super.onCreateView(name, context, attrs);
     }
 
     @OnClick(R.id.fab_switch_frag)
     public void switchfFragment() {
         if (ActivityUtils.currentFragment.getClass().getName()
                 .equals(mDemoDetailsFragment.getClass().getName())) {
-            ActivityUtils.switchFragment(getSupportFragmentManager(),
+            ActivityUtils.switchFragment(DemoListActivity.class, getSupportFragmentManager(),
                     mFragment, R.id.contentFrame);
         } else {
-            ActivityUtils.switchFragment(getSupportFragmentManager(),
+            ActivityUtils.switchFragment(DemoListActivity.class, getSupportFragmentManager(),
                     mDemoDetailsFragment, R.id.contentFrame);
         }
 //        Toast.makeText(this, "switch!!!", Toast.LENGTH_SHORT).show();

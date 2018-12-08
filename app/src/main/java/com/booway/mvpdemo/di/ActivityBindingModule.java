@@ -3,6 +3,8 @@ package com.booway.mvpdemo.di;
 import com.booway.mvpdemo.BookList.BookListModule;
 import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListModule;
+import com.booway.mvpdemo.switchdemo.SwitchDemoActivity;
+import com.booway.mvpdemo.switchdemo.SwitchDemoModule;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
@@ -15,6 +17,13 @@ import dagger.android.ContributesAndroidInjector;
 public abstract class ActivityBindingModule {
 
     @ActivityScoped
-    @ContributesAndroidInjector(modules = {DemoListModule.class, BookListModule.class})
+    @ContributesAndroidInjector(modules = {DemoListModule.class,
+            BookListModule.class})
     abstract DemoListActivity demoListActivity();
+
+    @ActivityScoped
+    @ContributesAndroidInjector(modules = {SwitchDemoModule.class})
+    abstract SwitchDemoActivity switchDemoActivity();
+
+
 }

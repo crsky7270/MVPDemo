@@ -3,6 +3,7 @@ package com.booway.mvpdemo.DemoList;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
@@ -27,6 +28,7 @@ import com.booway.mvpdemo.retrofit.Demo;
 import com.booway.mvpdemo.retrofit.DemoListAPI;
 import com.booway.mvpdemo.retrofit.DemoListPostAPI;
 import com.booway.mvpdemo.retrofit.DemoListService;
+import com.booway.mvpdemo.switchdemo.SwitchDemoActivity;
 import com.booway.mvpdemo.utils.SerializableUtils;
 import com.booway.mvpdemo.utils.StringUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
@@ -94,9 +96,36 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
+
+
+    @Override
     public void onResume() {
         super.onResume();
         mPresenter.takeView(this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
     @Override
@@ -173,6 +202,13 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
                 _idTxt.getText().toString());
         mBookPresenter.saveBook(book);
     }
+
+    @OnClick(R.id.openActivity)
+    public void open() {
+        Intent intent = new Intent(getActivity(), SwitchDemoActivity.class);
+        startActivity(intent);
+    }
+
 
     @OnClick(R.id.getList)
     public void GetList() {

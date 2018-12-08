@@ -49,6 +49,11 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:text="@string/getRxjavaUnionList"/>
+    <Button
+        android:id="@+id/openActivity"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/openActivity"/>
 
     <ListView
         android:id="@+id/listView"

@@ -21,7 +21,7 @@ public interface BookDao {
 
     @Query("SELECT * FROM Book")
     Maybe<List<Book>> getBooks();
-
+    
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertBook(Book book);
 }

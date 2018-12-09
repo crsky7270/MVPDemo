@@ -2,7 +2,11 @@ package com.booway.mvpdemo.data;
 
 import android.app.Application;
 import android.arch.persistence.db.SupportSQLiteDatabase;
+import android.arch.persistence.db.SupportSQLiteOpenHelper;
+import android.arch.persistence.room.DatabaseConfiguration;
+import android.arch.persistence.room.InvalidationTracker;
 import android.arch.persistence.room.Room;
+import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.migration.Migration;
 import android.os.Environment;
 import android.support.annotation.NonNull;

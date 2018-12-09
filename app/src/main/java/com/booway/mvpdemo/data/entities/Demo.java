@@ -16,7 +16,7 @@ import java.util.UUID;
 /**
  * Created by wandun on 2018/11/29.
  */
-@Entity(tableName = "Demo",indices = {@Index("id")})
+@Entity(tableName = "Demo", indices = {@Index("id")})
 public final class Demo {
 
     @PrimaryKey
@@ -85,5 +85,4 @@ public final class Demo {
     public int getAge() {
         return mAge;
     }
-
 }

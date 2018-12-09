@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import com.booway.mvpdemo.data.DemoDataSource;
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.data.entities.InnerJoinResult;
+import com.booway.mvpdemo.data.entities.InnerJoinTest;
+import com.booway.mvpdemo.data.source.local.DemoDao;
 
 import java.util.List;
 
@@ -51,6 +53,11 @@ public class FakeDemoRemoteDataSource implements DemoDataSource {
 
     @Override
     public Maybe<List<InnerJoinResult>> getRelationFromDemo() {
+        return null;
+    }
+
+    @Override
+    public Maybe<List<InnerJoinTest.innerResult>> getInnerResult() {
         return null;
     }
 }

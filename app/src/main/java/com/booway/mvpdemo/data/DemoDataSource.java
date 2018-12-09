@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.data.entities.InnerJoinResult;
+import com.booway.mvpdemo.data.entities.InnerJoinTest;
+import com.booway.mvpdemo.data.source.local.DemoDao;
 
 import java.util.List;
 
@@ -29,5 +31,7 @@ public interface DemoDataSource {
     void deleteTask(@NonNull String id);
 
     Maybe<List<InnerJoinResult>> getRelationFromDemo();
+
+    Maybe<List<InnerJoinTest.innerResult>> getInnerResult();
 
 }

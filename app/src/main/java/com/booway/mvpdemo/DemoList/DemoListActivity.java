@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.booway.mvpdemo.BaseActivity;
 import com.booway.mvpdemo.DemoDetails.DemoDetailsFragment;
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.utils.ActivityUtils;
@@ -22,12 +23,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import dagger.android.support.DaggerAppCompatActivity;
 
-public class DemoListActivity extends DaggerAppCompatActivity {
-    @Inject
-    DemoListFragment mFragment;
+public class DemoListActivity extends BaseActivity {
 
-    @Inject
-    DemoDetailsFragment mDemoDetailsFragment;
+
 
 //    @Inject
 //    DemoListPresenter mPresenter;

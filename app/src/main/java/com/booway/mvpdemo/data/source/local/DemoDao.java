@@ -8,6 +8,7 @@ import android.arch.persistence.room.Update;
 
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.data.entities.InnerJoinResult;
+import com.booway.mvpdemo.data.entities.InnerJoinTest;
 
 import java.util.List;
 
@@ -42,4 +43,15 @@ public interface DemoDao {
 
     @Query("SELECT demo_Id,Book.name,demo.age from demo INNER JOIN Book ON Demo.id = Book.demo_id")
     Maybe<List<InnerJoinResult>> getRelationFromDemo();
+
+    @Query("SELECT Demo.name as DemoName,Book.name as BookName FROM Demo,Book WHERE Demo.id = Book.demo_id")
+    Maybe<List<InnerJoinTest.innerResult>> getInnerResult();
+
+//    @Query("SELECT Demo.* FROM Demo Left Join Book ON Book.demo_id=Demo.id WHERE Book.demo_id='002'")
+//    Maybe<List<Demo>> getInnerResult();
+
+
+
 }
+
+

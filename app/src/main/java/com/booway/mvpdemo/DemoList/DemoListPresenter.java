@@ -149,14 +149,21 @@ final class DemoListPresenter implements DemoListContract.Presenter {
     @Override
     public void getRxjavaUnionList() {
         mCompositeDisposable.add(
-                mDemoRespository.getDemos()
-                        .flatMap(demos -> mBookRespository.getBooks())
+//                mDemoRespository.getDemos()
+//                        .flatMap(demos -> mBookRespository.getBooks())
+//                        .subscribeOn(Schedulers.io())
+//                        .observeOn(AndroidSchedulers.mainThread())
+//                        .subscribe(result -> {
+//
+//                        })
+                mDemoRespository.getInnerResult()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(result -> {
 
                         })
         );
+
 
 //        Flowable sourceA = Flowable.just(mBookRespository.getBooks());
 //        Flowable sourceB = Flowable.just(mDemoRespository.getDemos());

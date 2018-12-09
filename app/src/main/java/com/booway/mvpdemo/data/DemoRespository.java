@@ -6,6 +6,8 @@ import android.support.annotation.VisibleForTesting;
 
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.data.entities.InnerJoinResult;
+import com.booway.mvpdemo.data.entities.InnerJoinTest;
+import com.booway.mvpdemo.data.source.local.DemoDao;
 
 import java.util.List;
 import java.util.Map;
@@ -111,5 +113,10 @@ public class DemoRespository implements DemoDataSource {
     @Override
     public Maybe<List<InnerJoinResult>> getRelationFromDemo() {
         return mDemoLocalDataSource.getRelationFromDemo();
+    }
+
+    @Override
+    public Maybe<List<InnerJoinTest.innerResult>> getInnerResult() {
+        return mDemoLocalDataSource.getInnerResult();
     }
 }

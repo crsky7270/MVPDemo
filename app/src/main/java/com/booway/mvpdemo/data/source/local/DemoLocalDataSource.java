@@ -6,6 +6,7 @@ import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.data.DemoDataSource;
 import com.booway.mvpdemo.data.Local;
 import com.booway.mvpdemo.data.entities.InnerJoinResult;
+import com.booway.mvpdemo.data.entities.InnerJoinTest;
 import com.booway.mvpdemo.utils.AppExecutors;
 
 import java.util.List;
@@ -88,7 +89,12 @@ public class DemoLocalDataSource implements DemoDataSource {
     @Override
     public Maybe<List<InnerJoinResult>> getRelationFromDemo() {
 
-
+room
         return mDemoDao.getRelationFromDemo();
+    }
+
+    @Override
+    public Maybe<List<InnerJoinTest.innerResult>> getInnerResult() {
+        return mDemoDao.getInnerResult();
     }
 }

@@ -88,8 +88,6 @@ public class DemoLocalDataSource implements DemoDataSource {
 
     @Override
     public Maybe<List<InnerJoinResult>> getRelationFromDemo() {
-
-room
         return mDemoDao.getRelationFromDemo();
     }
 

@@ -57,11 +57,11 @@ public class DemoListService {
                         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                         .addConverterFactory(GsonConverterFactory.create())
                         .baseUrl("http://192.168.31.10:9900");
-        Demo demo = new Demo();
-        demo.Id = 10002;
-        demo.Name = "张三";
-        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),
-                new Gson().toJson(demo));
+//        Demo demo = new Demo();
+//        demo.Id = 10002;
+//        demo.Name = "张三";
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),
+//                new Gson().toJson(demo));
 
         if (!TextUtils.isEmpty(token)) {
             OkHttpClient client =
@@ -71,7 +71,6 @@ public class DemoListService {
                                         Request request = chain.request();
                                         Request newReq = request.newBuilder()
                                                 .addHeader("Authorization", format("token %s", token))
-                                                .post(body)
                                                 .build();
                                         return chain.proceed(newReq);
                                     }).build();

@@ -53,15 +53,19 @@ final class DemoListPresenter implements DemoListContract.Presenter {
 
     private BookRespository mBookRespository;
 
-//    @Nullable
-//    private String mId;
+
+    @Nullable
+    private String mId;
 
     @NonNull
     private CompositeDisposable mCompositeDisposable;
 
     @Inject
-    public DemoListPresenter(DemoRespository respository, BookRespository bookRespository) {
+    public DemoListPresenter(@Nullable String id,
+                             DemoRespository respository,
+                             BookRespository bookRespository) {
         this.mDemoRespository = respository;
+        this.mId = id;
         mCompositeDisposable = new CompositeDisposable();
         mBookRespository = bookRespository;
     }

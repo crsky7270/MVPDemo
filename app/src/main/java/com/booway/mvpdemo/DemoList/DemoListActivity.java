@@ -2,6 +2,7 @@ package com.booway.mvpdemo.DemoList;
 
 import android.content.Context;
 import android.os.PersistableBundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -25,12 +26,15 @@ import dagger.android.support.DaggerAppCompatActivity;
 
 public class DemoListActivity extends BaseActivity {
 
+    @Nullable
+    public String id;
 
 
 //    @Inject
 //    DemoListPresenter mPresenter;
 //    @BindView(R.id.contentFrame)
 //    FrameLayout mFrameLayout;
+
 
     @BindView(R.id.fab_switch_frag)
     FloatingActionButton mFloatingActionButton;

@@ -16,6 +16,6 @@ import retrofit2.http.POST;
 public interface DemoListPostAPI {
 
     @POST("/api/values")
-    Observable<String> postDemos();
+    Observable<String> postDemos(@Body Demo demo);
 
 }

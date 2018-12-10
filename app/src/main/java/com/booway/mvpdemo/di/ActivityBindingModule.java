@@ -1,6 +1,7 @@
 package com.booway.mvpdemo.di;
 
 import com.booway.mvpdemo.BookList.BookListModule;
+import com.booway.mvpdemo.DemoDetails.DemoDetailsModule;
 import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListModule;
 import com.booway.mvpdemo.switchdemo.SwitchDemoActivity;
@@ -18,7 +19,7 @@ public abstract class ActivityBindingModule {
 
     @ActivityScoped
     @ContributesAndroidInjector(modules = {DemoListModule.class,
-            BookListModule.class})
+            BookListModule.class, DemoDetailsModule.class})
     abstract DemoListActivity demoListActivity();
 
     @ActivityScoped

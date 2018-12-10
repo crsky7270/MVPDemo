@@ -20,6 +20,7 @@ final class BookListPresenter implements BookListContract.Presenter {
 
     @Inject
     public BookListPresenter(BookRespository respository) {
+
         this.mBookRespository = respository;
     }
 

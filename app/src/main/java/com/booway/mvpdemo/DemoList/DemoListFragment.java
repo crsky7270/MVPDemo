@@ -32,6 +32,7 @@ import com.booway.mvpdemo.switchdemo.SwitchDemoActivity;
 import com.booway.mvpdemo.utils.SerializableUtils;
 import com.booway.mvpdemo.utils.StringUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -62,7 +65,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class DemoListFragment extends DaggerFragment implements DemoListContract.View {
 
     @Nullable
-    final static String ARGUMENT_EDIT_DEMO_ID = "DemoId";
+    public final static String ARGUMENT_EDIT_DEMO_ID = "DemoId";
 
     @BindView(R.id.id)
     EditText _idTxt;
@@ -92,6 +95,11 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/demo.dat";
 
     @Inject
+    @Nullable
+    public String mid;
+
+
+    @Inject
     public DemoListFragment() {
     }
 
@@ -99,7 +107,6 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
-
 
 
     @Override
@@ -171,6 +178,7 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mDemoListAdapter = new DemoListAdapter(new ArrayList<>(), mItemListener);
+        TestPostMethod();
     }
 
     @Nullable
@@ -277,8 +285,13 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     }
 
     private void TestPostMethod() {
+        Demo demo = new Demo();
+        demo.Id = 10002;
+        demo.Name = "张三";
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),
+//                new Gson().toJson(demo));
         DemoListPostAPI service = DemoListService.createDemoListPostService("demo");
-        service.postDemos()
+        service.postDemos(demo)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(new Observer<String>() {

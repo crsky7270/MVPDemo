@@ -18,7 +18,10 @@ import dagger.android.support.DaggerFragment;
  */
 
 @ActivityScoped
-public class DemoDetailsFragment extends DaggerFragment {
+public class DemoDetailsFragment extends DaggerFragment implements DemoDetailsContract.View {
+
+    @Inject
+    public DemoDetailsPresenter mPresenter;
 
     @Inject
     public DemoDetailsFragment() {
@@ -48,7 +51,7 @@ public class DemoDetailsFragment extends DaggerFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View root=inflater.inflate(R.layout.frag_demo_details,container,false);
+        View root = inflater.inflate(R.layout.frag_demo_details, container, false);
         return root;
     }
 

@@ -3,7 +3,9 @@ package com.booway.mvpdemo.DemoList;
 import android.support.annotation.Nullable;
 
 import com.booway.mvpdemo.BookList.BookListContract;
+import com.booway.mvpdemo.DemoDetails.DemoDetailsContract;
 import com.booway.mvpdemo.DemoDetails.DemoDetailsFragment;
+import com.booway.mvpdemo.DemoDetails.DemoDetailsPresenter;
 import com.booway.mvpdemo.di.ActivityScoped;
 import com.booway.mvpdemo.di.FragmentScoped;
 
@@ -23,18 +25,14 @@ public abstract class DemoListModule {
     @ContributesAndroidInjector
     abstract DemoListFragment mDemoListFragment();
 
-    @FragmentScoped
-    @ContributesAndroidInjector
-    abstract DemoDetailsFragment mDemoDetailsFragment();
-
     @ActivityScoped
     @Binds
     abstract DemoListContract.Presenter demoListPresenter(DemoListPresenter presenter);
 
-//    @Provides
-//    @ActivityScoped
-//    @Nullable
-//    static String provideDemoId(DemoListActivity activity) {
-//        return activity.getIntent().getStringExtra(DemoListFragment.ARGUMENT_EDIT_DEMO_ID);
-//    }
+    @Provides
+    @ActivityScoped
+    @Nullable
+    static String provideDemoId(DemoListActivity activity) {
+        return activity.getIntent().getStringExtra(DemoListFragment.ARGUMENT_EDIT_DEMO_ID);
+    }
 }

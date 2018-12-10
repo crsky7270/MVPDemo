@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.booway.mvpdemo.DemoList.DemoListActivity;
+import com.booway.mvpdemo.DemoList.DemoListFragment;
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.di.ActivityScoped;
 import com.booway.mvpdemo.di.FragmentScoped;
@@ -53,6 +54,19 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
     public final String TAG = "※※※※※※※RXJAVA2※※※※※※※";
 
     private CompositeDisposable mCompositeDisposable;
+
+    @OnClick(R.id.gotoDemo)
+    public void gotoDemo() {
+        Intent intent = new Intent(getContext(), DemoListActivity.class);
+        intent.putExtra(DemoListFragment.ARGUMENT_EDIT_DEMO_ID, "001");
+        startActivity(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mUnbinder.unbind();
+    }
 
     @Inject
     public SwitchDemoFragment() {

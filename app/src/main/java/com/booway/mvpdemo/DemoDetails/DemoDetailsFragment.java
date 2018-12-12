@@ -8,9 +8,11 @@ import android.view.ViewGroup;
 
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.di.ActivityScoped;
+import com.booway.mvpdemo.utils.ToastUtils;
 
 import javax.inject.Inject;
 
+import butterknife.OnClick;
 import dagger.android.support.DaggerFragment;
 
 /**
@@ -22,6 +24,10 @@ public class DemoDetailsFragment extends DaggerFragment implements DemoDetailsCo
 
     @Inject
     public DemoDetailsPresenter mPresenter;
+
+    @Inject
+    @Nullable
+    public String id;
 
     @Inject
     public DemoDetailsFragment() {
@@ -46,6 +52,11 @@ public class DemoDetailsFragment extends DaggerFragment implements DemoDetailsCo
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+
+    private void test(@Nullable String mid){
+        ToastUtils.showToast(mid);
     }
 
     @Nullable

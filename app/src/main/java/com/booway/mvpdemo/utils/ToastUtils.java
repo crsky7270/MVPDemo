@@ -30,4 +30,13 @@ public class ToastUtils {
         toast.show();
     }
 
+    public static void showToast(int num) {
+        if (toast == null) {
+            toast = Toast.makeText(DemoApplicatoin.context, String.valueOf(num), Toast.LENGTH_SHORT);
+        } else {
+            toast.setText(String.valueOf(num));//如果不为空，则直接改变当前toast的文本
+        }
+        toast.show();
+    }
+
 }

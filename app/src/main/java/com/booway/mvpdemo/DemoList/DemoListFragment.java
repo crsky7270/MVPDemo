@@ -292,6 +292,9 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
 //                new Gson().toJson(demo));
         DemoListPostAPI service = DemoListService.createDemoListPostService("demo");
         service.postDemos(demo)
+                .doOnNext(result -> {
+                    //do somethings you want
+                })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(new Observer<String>() {

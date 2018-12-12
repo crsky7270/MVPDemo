@@ -13,5 +13,10 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:text="@string/toDemoList"/>
+    <Button
+        android:id="@+id/openDiaglog"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/openDialog"/>
 
 </LinearLayout>

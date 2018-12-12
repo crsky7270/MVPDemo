@@ -84,6 +84,7 @@ final class DemoListPresenter implements DemoListContract.Presenter {
 
     @Override
     public void getDemoList(boolean forceUpdate) {
+
         mCompositeDisposable.add(
                 mDemoRespository.getDemos()
                         .subscribeOn(Schedulers.io())

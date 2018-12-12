@@ -1,23 +1,34 @@
 package com.booway.mvpdemo.switchdemo;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListFragment;
 import com.booway.mvpdemo.R;
+import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.di.ActivityScoped;
 import com.booway.mvpdemo.di.FragmentScoped;
+import com.booway.mvpdemo.utils.AlertDialogUtils;
 import com.booway.mvpdemo.utils.LogUtils;
 import com.booway.mvpdemo.utils.StringUtils;
+import com.booway.mvpdemo.utils.ToastUtils;
 import com.google.common.eventbus.Subscribe;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -39,6 +50,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.internal.operators.observable.ObservableCreate;
 import io.reactivex.schedulers.Schedulers;
 
@@ -62,6 +74,169 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
         startActivity(intent);
     }
 
+    @OnClick(R.id.openDiaglog)
+    public void openDialog() {
+
+        List<Demo> demoList = new ArrayList<Demo>();
+        demoList.add(new Demo("杆塔", "001", 18));
+        demoList.add(new Demo("电缆井", "002", 18));
+        demoList.add(new Demo("电器设备", "003", 18));
+
+//        //创建AlertDialog的构造器的对象
+//        new AlertDialog.Builder(getActivity())
+//                .setTitle("提示")
+//                .setIcon(R.mipmap.ic_launcher)
+//                .setMessage("自定义对话框选择")
+//                .setPositiveButton("单选对话框", (dialog, which) -> {
+//                    showsingleSelectDialog(demoList);
+//                })
+//                .setNegativeButton("多选对话框", (dialog, which) -> {
+//                    showMultiSelectDialog(demoList);
+//                })
+//                .setNeutralButton("稍后提醒", null)
+//                .create().show();
+//        AlertDialogUtils.getInstance(getActivity())
+//                .showAlertDialog("提示", "自定义对话框选择",
+//                R.mipmap.ic_launcher, "单选对话框",
+//                        "多选对话框", (d, w) -> {
+//
+//                        }, (d, w) -> {
+//
+//                        });
+        Map<Integer, String> map = new HashMap<>();
+        map.put(100, "杆塔");
+        map.put(200, "电气设备");
+        map.put(300, "电缆井");
+
+//        AlertDialogUtils.getInstance(getActivity()).showAlertDialog(
+//                "title", "msg", 0, "yes", "no",
+//                (d, w) -> {
+//                }, (d, w) -> {
+//                }
+//        );
+
+//AlertDialogUtils.getInstance(getActivity())
+//        .showsingleSelectDialog1(demoList,0,(d,w)->{});
+
+        List<AlertDialogUtils.AlertDialogParam> params = new ArrayList<>();
+        AlertDialogUtils.AlertDialogParam p1 = new AlertDialogUtils.AlertDialogParam();
+        p1.key = "001";
+        p1.val = "杆塔";
+        p1.isChecked = true;
+        AlertDialogUtils.AlertDialogParam p2 = new AlertDialogUtils.AlertDialogParam();
+        p2.key = "002";
+        p2.val = "电气设备";
+
+        params.add(p1);
+        params.add(p2);
+        AlertDialogUtils.getInstance(getActivity()).showMutliSelectedDialog("t", 0, params, "no",
+                        "yes", null, null, null);
+
+//        Observable.create(new ObservableOnSubscribe<AlertDialog.Builder>() {
+//
+//            @Override
+//            public void subscribe(ObservableEmitter<AlertDialog.Builder> e) throws Exception {
+//
+//                AlertDialogUtils.getInstance(getActivity());
+//
+//                e.onNext(AlertDialogUtils.builder);
+//                /// /return AlertDialogUtils.builder;
+//            }
+//        }).subscribe(new Consumer<AlertDialog.Builder>() {
+//            @Override
+//            public void accept(AlertDialog.Builder builder) throws Exception {
+////                String[] showValues = new String[]{"1", "2", "3"};
+////                builder.setTitle("单选对话框").setIcon(R.mipmap.ic_launcher)
+////                        .setItems(showValues, (dialog1, which) -> {
+////                            ToastUtils.showToast(showValues[which]);
+////                        });
+////                builder.show();
+//                AlertDialogUtils.getInstance(getActivity()).showSingleSelectDialog("a",
+//                        "a",0,map,(d,w)->{});
+//            }
+//        });
+
+//        Observable.create(new ObservableOnSubscribe<AlertDialog>() {
+//            @Override
+//            public void subscribe(ObservableEmitter<AlertDialog> e) throws Exception {
+//                return AlertDialogUtils.getInstance(getActivity(), showValues, (dialog, which) -> {
+//                    ToastUtils.showToast(which);
+//                }).;
+//            }
+//        }).subscribe(new Consumer<AlertDialog>() {
+//            @Override
+//            public void accept(AlertDialog alertDialog) throws Exception {
+//                alertDialog.show();
+//            }
+//        });
+
+//        Observable.fromIterable(demoList)
+//                .map(demo -> demo.getName())
+//                .toList()
+//                .subscribe(lst -> {
+//                    String[] showValues = lst.toArray(new String[lst.size()]);
+//                    AlertDialogUtils.getInstance(getActivity(), showValues, (dialog, which) -> {
+//                        ToastUtils.showToast(which);
+//                    }).showSingleSelectDialog("title","message",0);
+//                });
+
+
+//        AlertDialogUtils.getInstance(getActivity())
+//                .showAlertDialog("title","show msg",0,"button",(dia,which)->{
+//
+//                });
+
+
+//        AlertDialogUtils.getInstance(getActivity())
+//                .showSingleSelectDialog("please point type",
+//                        "this is single dialog",0);
+//        showsingleSelectDialog(demoList);
+    }
+
+    private void showsingleSelectDialog(List<Demo> demoList) {
+
+
+        Observable.fromIterable(demoList)
+                .map(demo -> demo.getName())
+                .toList()
+                .subscribe(lst -> {
+                    String[] showValues = lst.toArray(new String[lst.size()]);
+                    AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                            .setTitle("单选对话框").setIcon(R.mipmap.ic_launcher)
+                            .setItems(showValues, (dialog1, which) -> {
+                                ToastUtils.showToast(showValues[which]);
+                            })
+                            .create();
+                    dialog.show();
+                });
+    }
+
+
+    private void showMultiSelectDialog(List<Demo> demoList) {
+
+//        Observable.fromIterable(demoList)
+//                .map(demo -> demo.getName())
+//                .toList()
+//                .subscribe(lst -> {
+//                    boolean[] isSelected = new boolean[lst.size()];
+//                    String[] showValues = lst.toArray(new String[lst.size()]);
+//                    AlertDialog dialog = new AlertDialog.Builder(getActivity())
+//                            .setTitle("多选对话框").setIcon(R.mipmap.ic_launcher)
+//                            .setMultiChoiceItems(showValues, isSelected, (dia, which, isChecked) -> {
+//
+//                            })
+//                            .setPositiveButton("确认", (dialog1, which) ->
+//                                    ToastUtils.showToast("好的，我知道啦！"))
+//                            .setNegativeButton("取消", (dialog12, which) ->
+//                                    ToastUtils.showToast("难道你都没有吃过？？"))
+//                            .create();
+//                    dialog.show();
+////                    设置宽高样式
+////                    dialog.getWindow().setLayout(300, 200);
+//                });
+
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -80,7 +255,7 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 //        multObserver();
 //        Rxjava_Map();
 //        Rxjava_floatMap();
-        Rxjava_Zip();
+//        Rxjava_Zip();
     }
 
 

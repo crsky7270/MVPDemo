@@ -37,6 +37,9 @@ public final class Demo {
         this(UUID.randomUUID().toString(), name, age);
     }
 
+    @Ignore
+    public boolean isSelected;
+
     /**
      * @param id
      * @param name

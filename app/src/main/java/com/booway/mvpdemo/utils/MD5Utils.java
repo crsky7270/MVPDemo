@@ -31,11 +31,4 @@ public class MD5Utils
         }
         return hexValue.toString().toUpperCase();
     }
-
-    public static void main(String[] args)
-    {
-        String str = "{\"username\":\"xyt\",\"userCode\":\"booway2015\",\"userDeviceInfo\":{\"deviceId\":\"123456\"}}";
-        System.out.println("原始：" + str);
-        System.out.println("MD5：" + MD5Utils.string2MD5(str));
-    }
 }

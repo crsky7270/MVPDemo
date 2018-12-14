@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
@@ -28,10 +29,19 @@ import com.booway.mvpdemo.retrofit.Demo;
 import com.booway.mvpdemo.retrofit.DemoListAPI;
 import com.booway.mvpdemo.retrofit.DemoListPostAPI;
 import com.booway.mvpdemo.retrofit.DemoListService;
+import com.booway.mvpdemo.retrofit.DownInfo;
+import com.booway.mvpdemo.retrofit.DownloadFileAPI;
+import com.booway.mvpdemo.retrofit.DownloadFileService;
+
+import com.booway.mvpdemo.retrofit.DownloadListener;
+import com.booway.mvpdemo.retrofit.DownloadResponseBody;
 import com.booway.mvpdemo.retrofit.ProgressRequestBody;
 import com.booway.mvpdemo.retrofit.UploadFileAPI;
 import com.booway.mvpdemo.retrofit.UploadFileService;
 import com.booway.mvpdemo.switchdemo.SwitchDemoActivity;
+import com.booway.mvpdemo.utils.FileUtils;
+import com.booway.mvpdemo.utils.JsonUtils;
+import com.booway.mvpdemo.utils.LogUtils;
 import com.booway.mvpdemo.utils.MD5Utils;
 import com.booway.mvpdemo.utils.SerializableUtils;
 import com.booway.mvpdemo.utils.StringUtils;
@@ -39,6 +49,10 @@ import com.booway.mvpdemo.utils.ToastUtils;
 import com.google.gson.Gson;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,11 +69,14 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -69,6 +86,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 @ActivityScoped
 public class DemoListFragment extends DaggerFragment implements DemoListContract.View {
+
+    public final String TAG = "********DemoListFragment************";
 
     @Nullable
     public final static String ARGUMENT_EDIT_DEMO_ID = "DemoId";
@@ -99,6 +118,8 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     private DemoListAdapter mDemoListAdapter;
 
 //    final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/demo.dat";
+
+    final String downloadPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/tmp/test.zip";
 
     @Inject
     @Nullable
@@ -185,8 +206,9 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         super.onCreate(savedInstanceState);
         mDemoListAdapter = new DemoListAdapter(new ArrayList<>(), mItemListener);
 //        TestPostMethod();
-        TestUploadFile();
+//        TestUploadFile();
 //        String md5 = MD5Utils.string2MD5("booway");
+        TestDownloadFile();
     }
 
 
@@ -350,6 +372,130 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     }
 
     final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/ZNXJAPP.zip";
+
+    private void TestDownloadFile() {
+//        DownInfo downInfo = new DownInfo();
+
+//        RequestBody param = RequestBody.create(MediaType.parse("application/json"), JsonUtils.toJson(downInfo));
+
+        DownloadListener listener = new DownloadListener() {
+            @Override
+            public void onStart() {
+                ToastUtils.showToast("start to download!");
+            }
+
+            @Override
+            public void onProgress(int progress) {
+//                ToastUtils.showToast(progress);
+//                _idTxt.setText(progress);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ToastUtils.showToast(progress);
+                    }
+                });
+            }
+
+            @Override
+            public void onCompleted() {
+//                ToastUtils.showToast("download completed!");
+            }
+
+            @Override
+            public void onError(String msg) {
+//                ToastUtils.showToast(msg);
+            }
+        };
+
+        DownInfo downInfo = new DownInfo();
+        downInfo.setToken("6AB44EC529C29570E8ECBD2C34FD5DB5beb8ceb53bc691fbd717179729bf4b20");
+        DownloadFileAPI service = DownloadFileService.createDownloadFileService("token", listener);
+//        listener.onStart();
+        service.download(downInfo)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .map(new Function<ResponseBody, InputStream>() {
+                    @Override
+                    public InputStream apply(ResponseBody body) throws Exception {
+                        return body.byteStream();
+                    }
+                })
+                .observeOn(Schedulers.computation())
+                .doOnNext((InputStream inputStream) -> {
+                    writeFile(inputStream, listener);
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<InputStream>() {
+                    @Override
+                    public void accept(InputStream inputStream) throws Exception {
+
+                    }
+                });
+
+//        service.download(downInfo)
+//                .subscribeOn(Schedulers.io())
+////                .unsubscribeOn(Schedulers.io())
+////                .map(new Function<ResponseBody, InputStream>() {
+////                    @Override
+////                    public InputStream apply(ResponseBody body) throws Exception {
+////                        return body.byteStream();
+////                    }
+////                })
+//                .observeOn(Schedulers.computation())
+//                .doOnNext((ResponseBody body) -> {
+//                    writeFile(body.byteStream(), listener);
+//                })
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<ResponseBody>() {
+//                    @Override
+//                    public void accept(ResponseBody body) throws Exception {
+//
+//                    }
+//                });load(downInfo)
+//                .subscribeOn(Schedulers.io())
+////                .unsubscribeOn(Schedulers.io())
+////                .map(new Function<ResponseBody, InputStream>() {
+////                    @Override
+////                    public InputStream apply(ResponseBody body) throws Exception {
+////                        return body.byteStream();
+////                    }
+////                })
+//                .observeOn(Schedulers.computation())
+//                .doOnNext((ResponseBody body) -> {
+//                    writeFile(body.byteStream(), listener);
+//                })
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<ResponseBody>() {
+//                    @Override
+//                    public void accept(ResponseBody body) throws Exception {
+//
+//                    }
+//                });
+    }
+
+    private void writeFile(InputStream is, DownloadListener listener) {
+        File file = new File(downloadPath);
+        if (file.exists())
+            file.delete();
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(file);
+            byte[] bytes = new byte[1024];
+
+            int len;
+            while ((len = is.read(bytes)) != -1) {
+                os.write(bytes, 0, len);
+//                LogUtils.d(TAG, "Len:" + len);
+            }
+            is.close();
+            os.close();
+        } catch (FileNotFoundException ex) {
+            listener.onError("FileNotFoundException" + ex.getMessage());
+        } catch (IOException ex) {
+            listener.onError("error:" + ex.getMessage());
+        }
+
+    }
 
     private void TestUploadFile() {
         File file = new File(path);

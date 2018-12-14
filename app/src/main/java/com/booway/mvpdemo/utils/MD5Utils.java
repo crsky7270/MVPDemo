@@ -3,10 +3,10 @@ package com.booway.mvpdemo.utils;
 import java.security.MessageDigest;
 
 /**
- * MD5转换
+ * provide by xyt on 2018/12/14.
  */
-public class MD5Utils
-{
+
+public class MD5Utils {
     /**
      * 生成32位MD5码
      * @param data

@@ -2,8 +2,11 @@ package com.booway.mvpdemo.utils;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+
+import com.booway.mvpdemo.R;
 
 import java.util.List;
 
@@ -40,7 +43,7 @@ public class AlertDialogUtils {
             synchronized (AlertDialogUtils.class) {
                 if (mAlertDialogUtil == null)
                     mAlertDialogUtil = new AlertDialogUtils();
-                builder = new AlertDialog.Builder(mContent);
+                builder = new AlertDialog.Builder(mContent, R.style.Theme_AppCompat_Dialog_Alert);
             }
         }
         return mAlertDialogUtil;

@@ -35,6 +35,8 @@ public interface DemoListContract {
         void getUnionList();
 
         void getRxjavaUnionList();
+
+        void batchInsertDemoList(List<Demo> demoList);
     }
 
 }

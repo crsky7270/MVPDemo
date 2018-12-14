@@ -83,4 +83,5 @@ dependencies {
 //    androidTestCompile "org.mockito:mockito-core:$rootProject.ext.mockitoVersion"
 
 
+    implementation 'com.idescout.sql:sqlscout-server:4.0'
 }

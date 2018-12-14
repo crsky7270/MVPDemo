@@ -34,4 +34,6 @@ public interface DemoDataSource {
 
     Maybe<List<InnerJoinTest.innerResult>> getInnerResult();
 
+    void batchInsertDemoList(List<Demo> demos);
+
 }

@@ -9,4 +9,7 @@
     <string name="openActivity">跳转</string>
     <string name="toDemoList">跳转Demo</string>
     <string name="openDialog">打开对话框</string>
+    <string name="_123">123</string>
+    <string name="this_is_switch_fragment">this is switch fragment</string>
+    <string name="batchInsert">批量插入</string>
 </resources>

@@ -32,7 +32,7 @@ public class DemoListService {
                 new Retrofit.Builder()
                         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                         .addConverterFactory(GsonConverterFactory.create())
-                        .baseUrl("http://192.168.31.10:9900");
+                        .baseUrl("http://192.168.31.204:9900");
 
         if (!TextUtils.isEmpty(token)) {
             OkHttpClient client =
@@ -56,7 +56,7 @@ public class DemoListService {
                 new Retrofit.Builder()
                         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                         .addConverterFactory(GsonConverterFactory.create())
-                        .baseUrl("http://192.168.31.10:9900");
+                        .baseUrl("http://192.168.31.204:5000");
 //        Demo demo = new Demo();
 //        demo.Id = 10002;
 //        demo.Name = "张三";

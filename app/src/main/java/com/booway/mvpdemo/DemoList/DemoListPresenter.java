@@ -191,4 +191,9 @@ final class DemoListPresenter implements DemoListContract.Presenter {
 //                });
 
     }
+
+    @Override
+    public void batchInsertDemoList(List<Demo> demoList) {
+        mDemoRespository.batchInsertDemoList(demoList);
+    }
 }

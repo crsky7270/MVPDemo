@@ -4,11 +4,13 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Transaction;
 import android.arch.persistence.room.Update;
 
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.data.entities.InnerJoinResult;
 import com.booway.mvpdemo.data.entities.InnerJoinTest;
+import com.booway.mvpdemo.utils.LogUtils;
 
 import java.util.List;
 
@@ -21,35 +23,45 @@ import io.reactivex.Single;
  */
 
 @Dao
-public interface DemoDao {
+public abstract class DemoDao {
+    public static final String TAG = "DATA";
 
     @Query("SELECT * FROM Demo")
-    Maybe<List<Demo>> getDemos();
+    public abstract Maybe<List<Demo>> getDemos();
 
     @Query("SELECT id FROM Demo")
-    List<String> getDemoIds();
+    public abstract List<String> getDemoIds();
 
     @Query("SELECT * FROM Demo WHERE id =:did")
-    Single<Demo> getDemo(String did);
+    public abstract Single<Demo> getDemo(String did);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertDemo(Demo demo);
+    public abstract void insertDemo(Demo demo);
 
     @Update
-    void updateDemo(Demo demo);
+    public abstract void updateDemo(Demo demo);
 
     @Query("DELETE FROM DEMO WHERE id =:did")
-    void deleteDemoById(String did);
+    public abstract void deleteDemoById(String did);
 
     @Query("SELECT demo_Id,Book.name,demo.age from demo INNER JOIN Book ON Demo.id = Book.demo_id")
-    Maybe<List<InnerJoinResult>> getRelationFromDemo();
+    public abstract Maybe<List<InnerJoinResult>> getRelationFromDemo();
 
     @Query("SELECT Demo.name as DemoName,Book.name as BookName FROM Demo,Book WHERE Demo.id = Book.demo_id")
-    Maybe<List<InnerJoinTest.innerResult>> getInnerResult();
+    public abstract Maybe<List<InnerJoinTest.innerResult>> getInnerResult();
+
+    @Transaction
+    public void batchInsertDemos(List<Demo> demoList) {
+        LogUtils.d(TAG, "-- Start insert demo!");
+        for (Demo demo : demoList) {
+
+            insertDemo(demo);
+        }
+        LogUtils.d(TAG, "-- Insert demo Completed!");
+    }
 
 //    @Query("SELECT Demo.* FROM Demo Left Join Book ON Book.demo_id=Demo.id WHERE Book.demo_id='002'")
 //    Maybe<List<Demo>> getInnerResult();
-
 
 
 }

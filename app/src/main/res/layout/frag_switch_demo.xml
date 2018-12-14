@@ -3,20 +3,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="36dp"
-        android:text="this is switch fragment"/>
+        android:text="@string/this_is_switch_fragment" />
 
     <Button
         android:id="@+id/gotoDemo"
         android:layout_width="match_parent"
         android:layout_height="36dp"
-        android:text="@string/toDemoList"/>
+        android:text="@string/toDemoList" />
+
     <Button
         android:id="@+id/openDiaglog"
         android:layout_width="match_parent"
         android:layout_height="36dp"
-        android:text="@string/openDialog"/>
+        android:text="@string/openDialog" />
+
+    <GridView
+        android:id="@+id/gridView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnWidth="80dp"
+        android:numColumns="3"
+        android:stretchMode="spacingWidthUniform"></GridView>
 
 </LinearLayout>

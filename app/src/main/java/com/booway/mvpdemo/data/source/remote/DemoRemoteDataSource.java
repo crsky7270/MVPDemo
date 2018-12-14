@@ -62,4 +62,9 @@ public class DemoRemoteDataSource implements DemoDataSource {
     public Maybe<List<InnerJoinTest.innerResult>> getInnerResult() {
         return null;
     }
+
+    @Override
+    public void batchInsertDemoList(List<Demo> demos) {
+
+    }
 }

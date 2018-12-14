@@ -95,4 +95,11 @@ public class DemoLocalDataSource implements DemoDataSource {
     public Maybe<List<InnerJoinTest.innerResult>> getInnerResult() {
         return mDemoDao.getInnerResult();
     }
+
+    @Override
+    public void batchInsertDemoList(List<Demo> demos) {
+        checkNotNull(demos);
+        Runnable runnable = () -> mDemoDao.batchInsertDemos(demos);
+        mAppExecutors.diskIO().execute(runnable);
+    }
 }

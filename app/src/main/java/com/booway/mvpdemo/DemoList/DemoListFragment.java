@@ -28,12 +28,17 @@ import com.booway.mvpdemo.retrofit.Demo;
 import com.booway.mvpdemo.retrofit.DemoListAPI;
 import com.booway.mvpdemo.retrofit.DemoListPostAPI;
 import com.booway.mvpdemo.retrofit.DemoListService;
+import com.booway.mvpdemo.retrofit.ProgressRequestBody;
+import com.booway.mvpdemo.retrofit.UploadFileAPI;
+import com.booway.mvpdemo.retrofit.UploadFileService;
 import com.booway.mvpdemo.switchdemo.SwitchDemoActivity;
+import com.booway.mvpdemo.utils.MD5Utils;
 import com.booway.mvpdemo.utils.SerializableUtils;
 import com.booway.mvpdemo.utils.StringUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
 import com.google.gson.Gson;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +58,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -92,7 +98,7 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
 
     private DemoListAdapter mDemoListAdapter;
 
-    final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/demo.dat";
+//    final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/demo.dat";
 
     @Inject
     @Nullable
@@ -178,8 +184,11 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mDemoListAdapter = new DemoListAdapter(new ArrayList<>(), mItemListener);
-        TestPostMethod();
+//        TestPostMethod();
+        TestUploadFile();
+//        String md5 = MD5Utils.string2MD5("booway");
     }
+
 
     @Nullable
     @Override
@@ -215,6 +224,26 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     public void open() {
         Intent intent = new Intent(getActivity(), SwitchDemoActivity.class);
         startActivity(intent);
+    }
+
+    @OnClick(R.id.batchInsert)
+    public void batchInsert() {
+        List<com.booway.mvpdemo.data.entities.Demo> demos = new ArrayList<>();
+        com.booway.mvpdemo.data.entities.Demo demo1 = new com.booway.mvpdemo.data.entities.Demo(
+                "005", "0055", 18
+        );
+        demos.add(demo1);
+
+        com.booway.mvpdemo.data.entities.Demo demo2 = new com.booway.mvpdemo.data.entities.Demo(
+                "006", "006", 18
+        );
+        demos.add(demo2);
+
+        com.booway.mvpdemo.data.entities.Demo demo3 = new com.booway.mvpdemo.data.entities.Demo(
+                "007", "007", 18
+        );
+        demos.add(demo2);
+        mPresenter.batchInsertDemoList(demos);
     }
 
 
@@ -318,6 +347,46 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
 
                     }
                 });
+    }
+
+    final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/ZNXJAPP.zip";
+
+    private void TestUploadFile() {
+        File file = new File(path);
+
+        RequestBody requestFile = RequestBody.create(MediaType.parse("application/zip"), file);
+
+        ProgressRequestBody body =
+                new ProgressRequestBody(requestFile, (current, total) ->
+                        ToastUtils.showToast("已上传：" + current + ",总共：" + total));
+
+        UploadFileAPI service = UploadFileService.createUploadFileService("token");
+
+        service.uploadFile(body)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
     }
 
     @Override

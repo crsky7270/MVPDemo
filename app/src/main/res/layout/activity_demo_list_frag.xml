@@ -54,6 +54,11 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:text="@string/openActivity"/>
+    <Button
+        android:id="@+id/batchInsert"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/batchInsert"/>
 
     <ListView
         android:id="@+id/listView"

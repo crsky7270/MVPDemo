@@ -1,7 +1,5 @@
 package com.booway.mvpdemo.switchdemo;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,22 +8,22 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.Toast;
+import android.widget.GridView;
+import android.widget.SimpleAdapter;
 
 import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListFragment;
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.di.ActivityScoped;
-import com.booway.mvpdemo.di.FragmentScoped;
 import com.booway.mvpdemo.utils.AlertDialogUtils;
 import com.booway.mvpdemo.utils.LogUtils;
-import com.booway.mvpdemo.utils.StringUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
-import com.google.common.eventbus.Subscribe;
 
+import java.io.Serializable;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,11 +45,8 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
-import io.reactivex.internal.operators.observable.ObservableCreate;
 import io.reactivex.schedulers.Schedulers;
 
 
@@ -60,6 +55,15 @@ import io.reactivex.schedulers.Schedulers;
  */
 @ActivityScoped
 public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoContract.View {
+
+    @BindView(R.id.gotoDemo)
+    Button mGotoDemo;
+
+    @BindView(R.id.openDiaglog)
+    Button mOpenDiaglog;
+
+    @BindView(R.id.gridView)
+    GridView mGirdView;
 
     private Unbinder mUnbinder;
 
@@ -77,7 +81,9 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
     @OnClick(R.id.openDiaglog)
     public void openDialog() {
 
-        List<Demo> demoList = new ArrayList<Demo>();
+        int test = Integer.MAX_VALUE >> 2;
+
+        List<Demo> demoList = new ArrayList<>();
         demoList.add(new Demo("杆塔", "001", 18));
         demoList.add(new Demo("电缆井", "002", 18));
         demoList.add(new Demo("电器设备", "003", 18));
@@ -130,7 +136,7 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
         params.add(p1);
         params.add(p2);
         AlertDialogUtils.getInstance(getActivity()).showMutliSelectedDialog("t", 0, params, "no",
-                        "yes", null, null, null);
+                "yes", null, null, null);
 
 //        Observable.create(new ObservableOnSubscribe<AlertDialog.Builder>() {
 //
@@ -197,7 +203,7 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 
 
         Observable.fromIterable(demoList)
-                .map(demo -> demo.getName())
+                .map(Demo::getName)
                 .toList()
                 .subscribe(lst -> {
                     String[] showValues = lst.toArray(new String[lst.size()]);
@@ -246,16 +252,6 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
     @Inject
     public SwitchDemoFragment() {
         mCompositeDisposable = new CompositeDisposable();
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-//        asyncRxjava();
-//        multObserver();
-//        Rxjava_Map();
-//        Rxjava_floatMap();
-//        Rxjava_Zip();
     }
 
 
@@ -426,13 +422,107 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
                 });
     }
 
+    private SimpleAdapter mAdapter;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initData();
+
+
+//        asyncRxjava();
+//        multObserver();
+//        Rxjava_Map();
+//        Rxjava_floatMap();
+//        Rxjava_Zip();
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.frag_switch_demo, container, false);
         mUnbinder = ButterKnife.bind(this, root);
+        String[] from = {"img", "text"};
+//        Map<Integer, Object> map = new HashMap<>();
+//        int i = 0;
+//        String a = "a";
+//        List<Integer> lsti=new ArrayList<>();
+//        List<String> lsts=new ArrayList<>();
+//        Observable.create(new ObservableOnSubscribe<Map<Integer,String>>() {
+//            @Override
+//            public void subscribe(ObservableEmitter<Map<Integer,String>> e) throws Exception {
+//
+//            }
+//        })
 
+        List<Demo> demoList = new ArrayList<Demo>();
+        demoList.add(new Demo("杆塔", "001", 18));
+        demoList.add(new Demo("电缆井", "002", 18));
+        demoList.add(new Demo("电器设备", "003", 18));
+
+        Observable.fromIterable(demoList).toMap((Demo key) -> {
+            return key.getId();
+        }, (Demo val) -> {
+            return val;
+        })
+                .subscribe(new Consumer<Map<String, Demo>>() {
+                    @Override
+                    public void accept(Map<String, Demo> stringStringMap) throws Exception {
+
+                    }
+                });
+
+        Observable.just(demoList).toMap(key -> {
+                    return key.get(0).getName();
+                }, val -> {
+                    return val.get(0).getId();
+                }
+        ).subscribe(new Consumer<Map<String, String>>() {
+            @Override
+            public void accept(Map<String, String> stringStringMap) throws Exception {
+
+            }
+        });
+//
+//        Observable.fromIterable(demoList).
+
+
+        int[] to = {R.id.iconId, R.id.textId};
+
+        mGirdView.measure(mGirdView.getMeasuredWidth(), View.MeasureSpec.makeMeasureSpec(
+                Integer.MAX_VALUE >> 2, View.MeasureSpec.AT_MOST));
+
+
+        mAdapter = new SimpleAdapter(getActivity(), dataList, R.layout.switch_gridview_item, from, to);
+        mGirdView.setAdapter(mAdapter);
+        mGirdView.setOnItemClickListener(new GridView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            }
+        });
         return root;
+    }
+
+    private List<Map<String, Object>> dataList = new ArrayList<>();
+
+    void initData() {
+        int icon[] = {R.mipmap.ic_launcher, R.drawable.ic_add, R.mipmap.ic_launcher, R.drawable.ic_add, R.drawable.ic_add,
+                R.drawable.ic_add, R.mipmap.ic_launcher, R.drawable.ic_add, R.mipmap.ic_launcher, R.drawable.ic_add,
+                R.drawable.ic_add, R.mipmap.ic_launcher};
+        String title[] = {"1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"};
+
+        for (int i = 0; i < icon.length; i++) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("img", icon[i]);
+            map.put("text", title[i]);
+            dataList.add(map);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mUnbinder.unbind();
     }
 }

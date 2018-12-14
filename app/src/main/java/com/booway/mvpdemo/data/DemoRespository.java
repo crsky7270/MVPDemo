@@ -119,4 +119,9 @@ public class DemoRespository implements DemoDataSource {
     public Maybe<List<InnerJoinTest.innerResult>> getInnerResult() {
         return mDemoLocalDataSource.getInnerResult();
     }
+
+    @Override
+    public void batchInsertDemoList(List<Demo> demos) {
+        mDemoLocalDataSource.batchInsertDemoList(demos);
+    }
 }

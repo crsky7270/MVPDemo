@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.booway.mvpdemo.BookList.BookListContract;
 import com.booway.mvpdemo.DemoApplicatoin;
 import com.booway.mvpdemo.R;
+import com.booway.mvpdemo.constants.FileMediaType;
 import com.booway.mvpdemo.data.DemoRespository;
 import com.booway.mvpdemo.data.entities.Book;
 import com.booway.mvpdemo.di.ActivityScoped;
@@ -449,7 +450,8 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     private void TestUploadFile() {
         File file = new File(path);
 
-        RequestBody requestFile = RequestBody.create(MediaType.parse("application/zip"), file);
+        RequestBody requestFile = RequestBody.create(
+                MediaType.parse(com.booway.mvpdemo.constants.MediaType.ZIP), file);
 
         ProgressRequestBody body =
                 new ProgressRequestBody(requestFile, (current, total) ->

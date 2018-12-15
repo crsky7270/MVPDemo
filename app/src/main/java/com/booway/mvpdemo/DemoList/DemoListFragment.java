@@ -81,7 +81,9 @@ import okhttp3.ResponseBody;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Created by wandun on 2018/11/23.
+ * 创建人：wandun
+ * 创建时间：2018/11/23
+ * 描述：测试Fragment
  */
 
 @ActivityScoped
@@ -288,12 +290,10 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         Demo demo = new Demo();
         demo.Id = 10002;
         demo.Name = "张三";
-
-
         try {
             SerializableUtils.serializeData(getActivity(), path, demo);
         } catch (Exception ex) {
-
+            LogUtils.d(TAG, ex.getMessage());
         }
     }
 
@@ -302,8 +302,9 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         try {
             Object object = SerializableUtils.deserializeData(getActivity(), path);
             demo = (Demo) object;
+            LogUtils.i(TAG, demo.toString());
         } catch (Exception ex) {
-
+            LogUtils.d(TAG, ex.getMessage());
         }
     }
 
@@ -373,129 +374,77 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
 
     final String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/download/ZNXJAPP.zip";
 
+    private String token = "6AB44EC529C29570E8ECBD2C34FD5DB5beb8ceb53bc691fbd717179729bf4b20";
+
     private void TestDownloadFile() {
-//        DownInfo downInfo = new DownInfo();
 
-//        RequestBody param = RequestBody.create(MediaType.parse("application/json"), JsonUtils.toJson(downInfo));
-
+        //create download listener
         DownloadListener listener = new DownloadListener() {
             @Override
             public void onStart() {
-                ToastUtils.showToast("start to download!");
+                getActivity().runOnUiThread(() -> ToastUtils.showToast("download start!!!"));
             }
 
             @Override
             public void onProgress(int progress) {
-//                ToastUtils.showToast(progress);
-//                _idTxt.setText(progress);
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ToastUtils.showToast(progress);
-                    }
-                });
+                getActivity().runOnUiThread(() -> ToastUtils.showToast(progress));
             }
 
             @Override
             public void onCompleted() {
-//                ToastUtils.showToast("download completed!");
+                getActivity().runOnUiThread(() -> ToastUtils.showToast("download completed!!!"));
             }
 
             @Override
             public void onError(String msg) {
-//                ToastUtils.showToast(msg);
+                getActivity().runOnUiThread(() -> ToastUtils.showToast(msg));
             }
         };
 
         DownInfo downInfo = new DownInfo();
-        downInfo.setToken("6AB44EC529C29570E8ECBD2C34FD5DB5beb8ceb53bc691fbd717179729bf4b20");
+        downInfo.token = token;
+
         DownloadFileAPI service = DownloadFileService.createDownloadFileService("token", listener);
-//        listener.onStart();
+        listener.onStart();
         service.download(downInfo)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
-                .map(new Function<ResponseBody, InputStream>() {
-                    @Override
-                    public InputStream apply(ResponseBody body) throws Exception {
-                        return body.byteStream();
-                    }
-                })
+                .map(ResponseBody::byteStream)
                 .observeOn(Schedulers.computation())
                 .doOnNext((InputStream inputStream) -> {
-                    writeFile(inputStream, listener);
+                    try {
+                        FileUtils.writeFile(downloadPath, inputStream);
+                    } catch (Exception ex) {
+                        listener.onError(ex.getMessage());
+                    }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<InputStream>() {
-                    @Override
-                    public void accept(InputStream inputStream) throws Exception {
-
-                    }
-                });
-
-//        service.download(downInfo)
-//                .subscribeOn(Schedulers.io())
-////                .unsubscribeOn(Schedulers.io())
-////                .map(new Function<ResponseBody, InputStream>() {
-////                    @Override
-////                    public InputStream apply(ResponseBody body) throws Exception {
-////                        return body.byteStream();
-////                    }
-////                })
-//                .observeOn(Schedulers.computation())
-//                .doOnNext((ResponseBody body) -> {
-//                    writeFile(body.byteStream(), listener);
-//                })
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Consumer<ResponseBody>() {
-//                    @Override
-//                    public void accept(ResponseBody body) throws Exception {
-//
-//                    }
-//                });load(downInfo)
-//                .subscribeOn(Schedulers.io())
-////                .unsubscribeOn(Schedulers.io())
-////                .map(new Function<ResponseBody, InputStream>() {
-////                    @Override
-////                    public InputStream apply(ResponseBody body) throws Exception {
-////                        return body.byteStream();
-////                    }
-////                })
-//                .observeOn(Schedulers.computation())
-//                .doOnNext((ResponseBody body) -> {
-//                    writeFile(body.byteStream(), listener);
-//                })
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Consumer<ResponseBody>() {
-//                    @Override
-//                    public void accept(ResponseBody body) throws Exception {
-//
-//                    }
-//                });
+                .subscribe(result -> listener.onCompleted());
     }
 
-    private void writeFile(InputStream is, DownloadListener listener) {
-        File file = new File(downloadPath);
-        if (file.exists())
-            file.delete();
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(file);
-            byte[] bytes = new byte[1024];
+//    private void writeFile(InputStream is, DownloadListener listener) {
+//        File file = new File(downloadPath);
+//        if (file.exists())
+//            file.delete();
+//        FileOutputStream os = null;
+//        try {
+//            os = new FileOutputStream(file);
+//            byte[] bytes = new byte[1024];
+//
+//            int len;
+//            while ((len = is.read(bytes)) != -1) {
+//                os.write(bytes, 0, len);
+////                LogUtils.d(TAG, "Len:" + len);
+//            }
+//            is.close();
+//            os.close();
+//        } catch (FileNotFoundException ex) {
+//            listener.onError("FileNotFoundException" + ex.getMessage());
+//        } catch (IOException ex) {
+//            listener.onError("error:" + ex.getMessage());
+//        }
 
-            int len;
-            while ((len = is.read(bytes)) != -1) {
-                os.write(bytes, 0, len);
-//                LogUtils.d(TAG, "Len:" + len);
-            }
-            is.close();
-            os.close();
-        } catch (FileNotFoundException ex) {
-            listener.onError("FileNotFoundException" + ex.getMessage());
-        } catch (IOException ex) {
-            listener.onError("error:" + ex.getMessage());
-        }
-
-    }
+//    }
 
     private void TestUploadFile() {
         File file = new File(path);
@@ -567,8 +516,8 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         private List<com.booway.mvpdemo.data.entities.Demo> mDemoList;
         private DemoItemListener mDemoItemListener;
 
-        public DemoListAdapter(List<com.booway.mvpdemo.data.entities.Demo> demos,
-                               DemoItemListener itemListener) {
+        DemoListAdapter(List<com.booway.mvpdemo.data.entities.Demo> demos,
+                        DemoItemListener itemListener) {
             setList(demos);
             this.mDemoItemListener = itemListener;
         }
@@ -577,7 +526,7 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
             mDemoList = checkNotNull(demoList);
         }
 
-        public void replaceData(List<com.booway.mvpdemo.data.entities.Demo> demos) {
+        void replaceData(List<com.booway.mvpdemo.data.entities.Demo> demos) {
             setList(demos);
             notifyDataSetChanged();
         }
@@ -612,9 +561,7 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
             textViewId.setText(demo.getId());
             textViewName.setText(demo.getName());
 
-            rowView.setOnClickListener((v) -> {
-                mDemoItemListener.onDemoClick(demo);
-            });
+            rowView.setOnClickListener((v) -> mDemoItemListener.onDemoClick(demo));
 
             return rowView;
         }

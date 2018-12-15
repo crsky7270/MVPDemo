@@ -1,20 +1,28 @@
 package com.booway.mvpdemo.retrofit;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
 import okhttp3.Response;
 
 /**
- * Created by wandun on 2018/12/14.
+ * 创建人：wandun
+ * 创建时间：2018/12/14
+ * 描述：下载监听器类
  */
 
 public class DownloadInterceptor implements Interceptor {
 
     private DownloadListener mProgressListener;
 
-    public DownloadInterceptor(DownloadListener listener) {
+    private String mToken;
+
+    DownloadInterceptor(DownloadListener listener, @Nullable String token) {
         this.mProgressListener = listener;
+        this.mToken = token;
     }
 
     @Override
@@ -22,6 +30,7 @@ public class DownloadInterceptor implements Interceptor {
         Response response = chain.proceed(chain.request());
 
         return response.newBuilder()
+                .addHeader("Authorization", mToken)
                 .body(new DownloadResponseBody(response.body(), mProgressListener))
                 .build();
     }

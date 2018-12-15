@@ -1,9 +1,10 @@
 package com.booway.mvpdemo.retrofit;
 
 /**
- * Created by wandun on 2018/12/14.
+ * 创建人：万吨
+ * 创建时间：20181216
+ * 描述：下载监听接口类
  */
-
 public interface DownloadListener {
 
     void onStart();

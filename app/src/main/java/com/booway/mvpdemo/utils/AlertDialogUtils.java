@@ -2,7 +2,6 @@ package com.booway.mvpdemo.utils;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 

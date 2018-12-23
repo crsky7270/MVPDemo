@@ -20,6 +20,33 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:text="@string/openDialog" />
+    <Button
+        android:id="@+id/showLoadingView"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="xianshi 加载框"/>
+    <Button
+        android:id="@+id/downloadMediaFile"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/下载图片"
+        />
+    <Button
+        android:id="@+id/openAircraft"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/打开飞控界面"
+        />
+    <Button
+        android:id="@+id/showThumbView"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/showThumbView"/>
+    <ImageView
+        android:background="#F00"
+        android:id="@+id/ThumbView"
+        android:layout_width="50dp"
+        android:layout_height="50dp" />
 
     <GridView
         android:id="@+id/gridView"

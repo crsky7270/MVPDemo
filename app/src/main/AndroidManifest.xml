@@ -2,9 +2,32 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.booway.mvpdemo">
 
+    <!-- DJI SDK need these permissions -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature
+        android:name="android.hardware.usb.host"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.usb.accessory"
+        android:required="true" />
+
 
     <application
         android:name=".DemoApplicatoin"
@@ -13,15 +36,41 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- DJI SDK -->
+        <uses-library android:name="com.android.future.usb.accessory" />
+        <meta-data
+            android:name="com.dji.sdk.API_KEY"
+            android:value="b4b3e385c2d39de3760adc19" />
+        <activity
+            android:name="dji.sdk.sdkmanager.DJIAoaControllerActivity"
+            android:theme="@android:style/Theme.Translucent">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
+                android:resource="@xml/accessory_filter" />
+        </activity>
+
         <activity android:name=".DemoList.DemoListActivity">
 
         </activity>
         <activity android:name=".switchdemo.SwitchDemoActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".dji.DjiActivity">
+
+        </activity>
+
+        <!-- AMaps -->
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="2a29effac27fd4c9fda1f6d9b32a399d" />
+
     </application>
 
 </manifest>

@@ -1,5 +1,6 @@
 package com.booway.mvpdemo.DemoList;
 
+import android.Manifest;
 import android.content.Context;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
@@ -15,7 +16,12 @@ import android.widget.Toast;
 import com.booway.mvpdemo.BaseActivity;
 import com.booway.mvpdemo.DemoDetails.DemoDetailsFragment;
 import com.booway.mvpdemo.R;
+import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
 import com.booway.mvpdemo.utils.ActivityUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 

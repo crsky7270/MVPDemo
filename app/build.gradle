@@ -11,15 +11,55 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+    lintOptions {
+        abortOnError false
+    }
+
     buildTypes {
-        release {
+        debug {
             minifyEnabled false
+            // Uses new built-in shrinker http://tools.android.com/tech-docs/new-build-system/built-in-shrinker
+            useProguard false
+            debuggable true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
         }
+        release {
+            minifyEnabled true
+            useProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
+        }
+    }
+    packagingOptions {
+        doNotStrip "*/*/libdjivideo.so"
+        doNotStrip "*/*/libSDKRelativeJNI.so"
+        doNotStrip "*/*/libFlyForbid.so"
+        doNotStrip "*/*/libduml_vision_bokeh.so"
+        doNotStrip "*/*/libyuv2.so"
+        doNotStrip "*/*/libGroudStation.so"
+        doNotStrip "*/*/libFRCorkscrew.so"
+        doNotStrip "*/*/libUpgradeVerify.so"
+        doNotStrip "*/*/libFR.so"
+        pickFirst 'lib/*/libstlport_shared.so'
+        pickFirst 'lib/*/libRoadLineRebuildAPI.so'
+        pickFirst 'lib/*/libGNaviUtils.so'
+        pickFirst 'lib/*/libGNaviMapex.so'
+        pickFirst 'lib/*/libGNaviData.so'
+        pickFirst 'lib/*/libGNaviMap.so'
+        pickFirst 'lib/*/libGNaviSearch.so'
+        exclude '/lib/armeabi-v7a/libChineseFontPkg.so'
+        exclude 'META-INF/rxjava.properties'
     }
     compileOptions {
         targetCompatibility 1.8
+        sourceCompatibility 1.8
         sourceCompatibility 1.8
     }
 }
@@ -36,6 +76,11 @@ dependencies {
     compile "com.google.guava:guava:$rootProject.guavaVersion"
     compile "android.arch.persistence.room:runtime:$rootProject.roomVersion"
     annotationProcessor "android.arch.persistence.room:compiler:$rootProject.roomVersion"
+
+    // Dji
+    api "com.dji:dji-uxsdk:$rootProject.djiVersion"
+    provided "com.dji:dji-sdk-provided:$rootProject.djiVersion"
+    compile "com.amap.api:3dmap:$rootProject.amap3dVersion"
 
     // Dagger dependencies
     annotationProcessor "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"

@@ -1,5 +1,7 @@
 package com.booway.mvpdemo.retrofit;
 
+import com.google.gson.JsonObject;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -20,7 +22,7 @@ public class NullOnEmptyConverterFactory extends Converter.Factory {
     public Converter<ResponseBody, ?> responseBodyConverter(Type type, Annotation[] annotations, Retrofit retrofit) {
         final Converter<ResponseBody, ?> delegate = retrofit.nextResponseBodyConverter(this, type, annotations);
         return (Converter<ResponseBody, Object>) body -> {
-            if (body.contentLength() == 0) return "操作成功!";
+            if (body.contentLength() == 0) return new JsonObject();
             return delegate.convert(body);
         };
     }

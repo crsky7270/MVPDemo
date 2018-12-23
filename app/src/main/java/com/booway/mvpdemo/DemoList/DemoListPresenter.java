@@ -109,6 +109,7 @@ final class DemoListPresenter implements DemoListContract.Presenter {
                 .subscribe(
                         //onNext
                         demo -> {
+
                             mView.showDemo(demo);
                         },
                         //onError

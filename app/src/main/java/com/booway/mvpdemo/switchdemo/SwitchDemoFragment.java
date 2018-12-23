@@ -1,26 +1,42 @@
 package com.booway.mvpdemo.switchdemo;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.SimpleAdapter;
 
+import com.booway.mvpdemo.DemoApplicatoin;
 import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListFragment;
 import com.booway.mvpdemo.R;
+//import com.booway.mvpdemo.component.CircularLoadingView;
+import com.booway.mvpdemo.component.LVCircular;
+import com.booway.mvpdemo.component.LoadView;
+import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.di.ActivityScoped;
+import com.booway.mvpdemo.dji.DjiActivity;
 import com.booway.mvpdemo.utils.AlertDialogUtils;
+import com.booway.mvpdemo.utils.DisplayUtils;
 import com.booway.mvpdemo.utils.LogUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
+
+import org.reactivestreams.Publisher;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
@@ -37,6 +53,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import dagger.android.support.DaggerFragment;
+import dji.sdk.media.MediaFile;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -56,6 +74,9 @@ import io.reactivex.schedulers.Schedulers;
 @ActivityScoped
 public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoContract.View {
 
+    @Inject
+    DjiSdkComponent mDjiSdkComponent;
+
     @BindView(R.id.gotoDemo)
     Button mGotoDemo;
 
@@ -64,6 +85,9 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 
     @BindView(R.id.gridView)
     GridView mGirdView;
+
+    @BindView(R.id.ThumbView)
+    ImageView mImageView;
 
     private Unbinder mUnbinder;
 
@@ -88,41 +112,10 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
         demoList.add(new Demo("电缆井", "002", 18));
         demoList.add(new Demo("电器设备", "003", 18));
 
-//        //创建AlertDialog的构造器的对象
-//        new AlertDialog.Builder(getActivity())
-//                .setTitle("提示")
-//                .setIcon(R.mipmap.ic_launcher)
-//                .setMessage("自定义对话框选择")
-//                .setPositiveButton("单选对话框", (dialog, which) -> {
-//                    showsingleSelectDialog(demoList);
-//                })
-//                .setNegativeButton("多选对话框", (dialog, which) -> {
-//                    showMultiSelectDialog(demoList);
-//                })
-//                .setNeutralButton("稍后提醒", null)
-//                .create().show();
-//        AlertDialogUtils.getInstance(getActivity())
-//                .showAlertDialog("提示", "自定义对话框选择",
-//                R.mipmap.ic_launcher, "单选对话框",
-//                        "多选对话框", (d, w) -> {
-//
-//                        }, (d, w) -> {
-//
-//                        });
         Map<Integer, String> map = new HashMap<>();
         map.put(100, "杆塔");
         map.put(200, "电气设备");
         map.put(300, "电缆井");
-
-//        AlertDialogUtils.getInstance(getActivity()).showAlertDialog(
-//                "title", "msg", 0, "yes", "no",
-//                (d, w) -> {
-//                }, (d, w) -> {
-//                }
-//        );
-
-//AlertDialogUtils.getInstance(getActivity())
-//        .showsingleSelectDialog1(demoList,0,(d,w)->{});
 
         List<AlertDialogUtils.AlertDialogParam> params = new ArrayList<>();
         AlertDialogUtils.AlertDialogParam p1 = new AlertDialogUtils.AlertDialogParam();
@@ -197,6 +190,47 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 //                .showSingleSelectDialog("please point type",
 //                        "this is single dialog",0);
 //        showsingleSelectDialog(demoList);
+    }
+
+    @OnClick(R.id.showThumbView)
+    public void showTumbView() {
+        ToastUtils.showToast("start download!");
+//        mDjiSdkComponent.downloadLastThumMediaFile()
+//                .doOnSubscribe(subscription ->
+//                mDjiSdkComponent.getMediaFileList()
+//                        .subscribe())
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .delay(1,TimeUnit.SECONDS)
+//                .subscribe(bitmap -> {
+//                    mImageView.setImageBitmap(bitmap);
+//                });
+
+        mDjiSdkComponent.downloadLastThumMediaFile()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(bitmap -> {
+//                    int cout = bitmap.getByteCount();
+//                    int height = bitmap.getHeight();
+//                    int width = bitmap.getWidth();
+
+//                    ToastUtils.showToast(bitmap);
+//ToastUtils.showToast(bitmap);
+                    ToastUtils.showToast(System.currentTimeMillis() + "");
+                    mImageView.setImageBitmap(bitmap);
+                });
+
+//        mDjiSdkComponent.getMediaFileList().flatMap(e -> {
+//            return mDjiSdkComponent.getThumbnailByIndex(e.size() - 1, e);
+//        }).subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(bitmap -> {
+//                    int cout = bitmap.getByteCount();
+//                    int height = bitmap.getHeight();
+//                    int width = bitmap.getWidth();
+//
+//                    ToastUtils.showToast(bitmap);
+//                });
     }
 
     private void showsingleSelectDialog(List<Demo> demoList) {
@@ -427,6 +461,9 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        CircularLoadingView.getInstance().startAnim();
+
+
         initData();
 
 
@@ -437,12 +474,72 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 //        Rxjava_Zip();
     }
 
+//    @BindView(R.id.loadView)
+//    CircularLoadingView mLoadingView;
+
+    @OnClick(R.id.downloadMediaFile)
+    public void downloadMediaFile() {
+//        mDjiSdkComponent.downloadLastMediaFile("temp")
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(result -> {
+//                    ToastUtils.showToast(result);
+//                });
+        mDjiSdkComponent.getMediaFileList().subscribe(result->{
+            if(result!=null)
+                ToastUtils.showToast("ok");
+        });
+        mDjiSdkComponent.getMediaFileList().subscribe();
+    }
+
+    @OnClick(R.id.openAircraft)
+    public void openAircraft() {
+        Intent intent = new Intent(getActivity(), DjiActivity.class);
+
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.showLoadingView)
+    public void showLoading() {
+//        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+//        showPopupWindow();
+//        LoadView.getInstance(getActivity()).show();
+        Observable.just(LoadView.getInstance(getActivity()))
+                .doOnNext(dlg -> {
+                    dlg.show();
+                })
+                .delay(5, TimeUnit.SECONDS)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        (obj) -> {
+                            obj.close();
+                        }
+                );
+//        LoadView.getInstance(getActivity()).show();
+//        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.Theme_AppCompat_Dialog_Alert);
+//        AlertDialog dialog = builder.setTitle("tips").create();
+//        dialog.show();
+//        android.view.WindowManager.LayoutParams p = dialog.getWindow().getAttributes();
+//        p.height = DisplayUtils.dip2px(DemoApplicatoin.context, 100);
+//        p.width = DisplayUtils.dip2px(DemoApplicatoin.context, 100);
+//        dialog.getWindow().setAttributes(p);
+//        builder.create().getWindow().setLayout(100,100);
+//        ViewGroup.LayoutParams params=new ViewGroup.LayoutParams()
+
+//        AlertDialogUtils.getInstance(getActivity()).showLoadingView();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.frag_switch_demo, container, false);
         mUnbinder = ButterKnife.bind(this, root);
         String[] from = {"img", "text"};
+//        mLoadingView.setViewColor(Color.rgb(255, 99, 99));
+//        mLoadingView.setRoundColor(Color.rgb(255, 0, 0));
+//        mLoadingView.startAnim();
 //        Map<Integer, Object> map = new HashMap<>();
 //        int i = 0;
 //        String a = "a";
@@ -524,5 +621,33 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
     public void onDestroyView() {
         super.onDestroyView();
         mUnbinder.unbind();
+    }
+
+    /**
+     * 显示弹出框
+     */
+    public void showPopupWindow() {
+        // 获取WindowManager
+        final WindowManager mWindowManager = (WindowManager) DemoApplicatoin.context.getSystemService(Context.WINDOW_SERVICE);
+
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        // 类型
+        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        // 设置flag
+        params.flags = WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        // 如果设置了WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE，弹出的View收不到Back键的事件
+        // 不设置这个弹出框的透明遮罩显示为黑色
+        params.format = PixelFormat.TRANSLUCENT;
+        // FLAG_NOT_TOUCH_MODAL不阻塞事件传递到后面的窗口
+        // 设置 FLAG_NOT_FOCUSABLE 悬浮窗口较小时，后面的应用图标由不可长按变为可长按
+        // 不设置这个flag的话，home页的划屏会有问题
+        params.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        params.gravity = Gravity.CENTER;
+        LVCircular view = LVCircular.getInstance();
+        view.setViewColor(Color.rgb(255, 99, 99));
+        view.setRoundColor(Color.rgb(255, 0, 0));
+        view.startAnim();
+        mWindowManager.addView(LVCircular.getInstance(), params);
     }
 }

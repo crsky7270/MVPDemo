@@ -14,6 +14,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
+import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -44,7 +45,8 @@ public class DemoListService {
                                                 .addHeader("Authorization", format("token %s", token))
                                                 .build();
                                         return chain.proceed(newReq);
-                                    }).build();
+                                    })
+                            .build();
             builder.client(client);
         }
         return builder.build().create(DemoListAPI.class);
@@ -56,12 +58,7 @@ public class DemoListService {
                 new Retrofit.Builder()
                         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                         .addConverterFactory(GsonConverterFactory.create())
-                        .baseUrl("http://192.168.31.204:5000");
-//        Demo demo = new Demo();
-//        demo.Id = 10002;
-//        demo.Name = "张三";
-//        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),
-//                new Gson().toJson(demo));
+                        .baseUrl("http://192.168.2.136:8080");
 
         if (!TextUtils.isEmpty(token)) {
             OkHttpClient client =
@@ -73,7 +70,14 @@ public class DemoListService {
                                                 .addHeader("Authorization", format("token %s", token))
                                                 .build();
                                         return chain.proceed(newReq);
-                                    }).build();
+                                    })
+                            .addInterceptor(chain -> {
+                                Response response = chain.proceed(chain.request());
+                                return response.newBuilder()
+                                        .addHeader("Authorization", "")
+                                        .build();
+                            })
+                            .build();
             builder.client(client);
         }
         return builder.build().create(DemoListPostAPI.class);

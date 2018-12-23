@@ -4,6 +4,8 @@ import com.booway.mvpdemo.BookList.BookListModule;
 import com.booway.mvpdemo.DemoDetails.DemoDetailsModule;
 import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListModule;
+import com.booway.mvpdemo.dji.DjiActivity;
+import com.booway.mvpdemo.dji.DjiModule;
 import com.booway.mvpdemo.switchdemo.SwitchDemoActivity;
 import com.booway.mvpdemo.switchdemo.SwitchDemoModule;
 
@@ -25,6 +27,10 @@ public abstract class ActivityBindingModule {
     @ActivityScoped
     @ContributesAndroidInjector(modules = {SwitchDemoModule.class})
     abstract SwitchDemoActivity switchDemoActivity();
+
+    @ActivityScoped
+    @ContributesAndroidInjector(modules = {DjiModule.class})
+    abstract DjiActivity djiActivity();
 
 
 }

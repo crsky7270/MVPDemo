@@ -12,4 +12,8 @@
     <string name="_123">123</string>
     <string name="this_is_switch_fragment">this is switch fragment</string>
     <string name="batchInsert">批量插入</string>
+    <string name="downloadMediaFile">下载拍照图片</string>
+    <string name="打开飞控界面">openAirCraft</string>
+    <string name="下载图片">downloadfile</string>
+    <string name="showThumbView">显示缩略图</string>
 </resources>

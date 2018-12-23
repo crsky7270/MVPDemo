@@ -36,9 +36,12 @@ import com.booway.mvpdemo.retrofit.DownloadFileService;
 
 import com.booway.mvpdemo.retrofit.DownloadListener;
 import com.booway.mvpdemo.retrofit.DownloadResponseBody;
+import com.booway.mvpdemo.retrofit.LoginAPI;
+import com.booway.mvpdemo.retrofit.LoginService;
 import com.booway.mvpdemo.retrofit.ProgressRequestBody;
 import com.booway.mvpdemo.retrofit.UploadFileAPI;
 import com.booway.mvpdemo.retrofit.UploadFileService;
+import com.booway.mvpdemo.retrofit.User;
 import com.booway.mvpdemo.switchdemo.SwitchDemoActivity;
 import com.booway.mvpdemo.utils.FileUtils;
 import com.booway.mvpdemo.utils.JsonUtils;
@@ -48,6 +51,7 @@ import com.booway.mvpdemo.utils.SerializableUtils;
 import com.booway.mvpdemo.utils.StringUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -208,10 +212,11 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mDemoListAdapter = new DemoListAdapter(new ArrayList<>(), mItemListener);
+        TestLogin();
 //        TestPostMethod();
 //        TestUploadFile();
 //        String md5 = MD5Utils.string2MD5("booway");
-        TestDownloadFile();
+//        TestDownloadFile();
     }
 
 
@@ -307,6 +312,35 @@ public class DemoListFragment extends DaggerFragment implements DemoListContract
         } catch (Exception ex) {
             LogUtils.d(TAG, ex.getMessage());
         }
+    }
+
+    private void TestLogin() {
+        User user = new User("xyt", "R2nlzi44xyFppWnAUXFR6w==");
+        LoginAPI service = LoginService.createLoginService("de");
+        service.login(user)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<JsonObject>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(JsonObject body) {
+                        int size = body.size();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
     private void TestGetHttpMethod() {

@@ -5,6 +5,7 @@ import android.os.Handler;
 
 import com.booway.mvpdemo.data.DemoRespository;
 import com.booway.mvpdemo.di.DaggerAppComponent;
+import com.secneo.sdk.Helper;
 
 import javax.inject.Inject;
 
@@ -30,5 +31,11 @@ public class DemoApplicatoin extends DaggerApplication {
     public void onCreate() {
         super.onCreate();
         context = this;
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        Helper.install(DemoApplicatoin.this);
     }
 }

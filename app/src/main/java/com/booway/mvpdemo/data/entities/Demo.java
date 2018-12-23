@@ -17,7 +17,7 @@ import java.util.UUID;
  * Created by wandun on 2018/11/29.
  */
 @Entity(tableName = "Demo", indices = {@Index("id")})
-public final class Demo {
+public final class Demo extends CommonBean {
 
     @PrimaryKey
     @NonNull

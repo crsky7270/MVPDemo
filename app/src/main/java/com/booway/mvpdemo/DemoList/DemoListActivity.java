@@ -2,6 +2,7 @@ package com.booway.mvpdemo.DemoList;
 
 import android.Manifest;
 import android.content.Context;
+import android.nfc.Tag;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +19,7 @@ import com.booway.mvpdemo.DemoDetails.DemoDetailsFragment;
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
 import com.booway.mvpdemo.utils.ActivityUtils;
+import com.booway.mvpdemo.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import dagger.android.support.DaggerAppCompatActivity;
+import io.reactivex.Observable;
 
 public class DemoListActivity extends BaseActivity {
 
@@ -59,6 +62,9 @@ public class DemoListActivity extends BaseActivity {
 //                fragment, R.id.contentFrame);
         ActivityUtils.switchFragment(DemoListActivity.class,
                 getSupportFragmentManager(), fragment, R.id.contentFrame);
+
+
+
     }
 
 

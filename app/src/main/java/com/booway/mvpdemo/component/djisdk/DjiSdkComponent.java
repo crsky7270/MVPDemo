@@ -2,6 +2,7 @@ package com.booway.mvpdemo.component.djisdk;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.nfc.Tag;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -26,11 +27,13 @@ import javax.inject.Singleton;
 import dji.common.camera.SettingsDefinitions;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
+import dji.common.flightcontroller.CompassCalibrationState;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.GPSSignalLevel;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
+import dji.common.util.CommonCallbacks.CompletionCallbackWith;
 import dji.keysdk.AirLinkKey;
 import dji.keysdk.CameraKey;
 import dji.keysdk.KeyManager;
@@ -40,6 +43,7 @@ import dji.log.DJILog;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
+import dji.sdk.flightcontroller.Compass;
 import dji.sdk.media.DownloadListener;
 import dji.sdk.media.FetchMediaTask;
 import dji.sdk.media.FetchMediaTaskContent;
@@ -424,9 +428,9 @@ public class DjiSdkComponent implements DjiSdkInterface {
                 @Override
                 public void onResult(DJIError djiError) {
                     if (djiError == null) {
-                        Bitmap bitmap=file.getThumbnail();
+                        Bitmap bitmap = file.getThumbnail();
                         e.onNext(bitmap);
-                    }else{
+                    } else {
 //                        e.onNext("error");
                     }
                     e.onComplete();
@@ -654,4 +658,325 @@ public class DjiSdkComponent implements DjiSdkInterface {
                     e.onNext(bean);
                 }), BackpressureStrategy.BUFFER);
     }
+
+    /**
+     * 开始指南针校对
+     *
+     * @return
+     */
+    public Observable<Boolean> startCalibration() {
+        return Observable.create(e -> {
+            getAircraftInstance().getFlightController().getCompass().startCalibration(djiError -> {
+                if (djiError == null) {
+                    e.onNext(true);
+                } else {
+                    e.onNext(false);
+                }
+                e.onComplete();
+            });
+        });
+    }
+
+    /**
+     * 停止指南针校对
+     *
+     * @return
+     */
+    public Observable<Boolean> stopCalibration() {
+        return Observable.create(e -> {
+            getAircraftInstance().getFlightController().getCompass().stopCalibration(djiError -> {
+                if (djiError == null) {
+                    e.onNext(true);
+                } else {
+                    e.onNext(false);
+                }
+                e.onComplete();
+            });
+        });
+    }
+
+    /**
+     * 获取指南针校准状态
+     *
+     * @return
+     */
+    public Observable<CompassCalibrationState> getCalibrationState() {
+        return Observable.create(e -> {
+            e.onNext(getAircraftInstance().getFlightController().getCompass().getCalibrationState());
+            e.onComplete();
+        });
+    }
+
+    /**
+     * 设置指南针状态回调
+     *
+     * @param callBack
+     */
+    public void setCalibrationCallBack(CompassCalibrationState.Callback callBack) {
+        getAircraftInstance().getFlightController().getCompass().setCalibrationStateCallback(callBack);
+    }
+
+    /**
+     * 指南针是否正在校准中
+     *
+     * @return
+     */
+    public boolean isCalibrating() {
+        return getAircraftInstance().getFlightController().getCompass().isCalibrating();
+    }
+
+    /**
+     * 检测摄像头是否支持点击对焦放大
+     *
+     * @return
+     */
+    public boolean isTapZoomSupported() {
+        return getCameraInstance().isTapZoomSupported();
+    }
+
+    /**
+     * 获取点击对焦状态是否开启
+     *
+     * @return
+     */
+    public Observable<Boolean> getTapZoomEnabled() {
+        return Observable.create(e -> {
+            getCameraInstance().getTapZoomEnabled(new CompletionCallbackWith<Boolean>() {
+                @Override
+                public void onSuccess(Boolean aBoolean) {
+                    e.onNext(true);
+                    e.onComplete();
+                }
+
+                @Override
+                public void onFailure(DJIError djiError) {
+                    e.onNext(false);
+                    LogUtils.d(TAG, djiError.getDescription());
+                    e.onComplete();
+                }
+            });
+        });
+    }
+
+    /**
+     * 设置摄像头点击放大功能是否可用
+     *
+     * @param flag
+     * @return 设置是否成功
+     */
+    public Observable<Boolean> setTapZoomEnabled(boolean flag) {
+        return Observable.create(e -> {
+            getCameraInstance().setTapZoomEnabled(flag, djiError -> {
+                if (djiError == null) {
+                    e.onNext(true);
+                } else {
+                    e.onNext(false);
+                }
+                e.onComplete();
+            });
+        });
+    }
+
+    /**
+     * 设置镜头变焦模式
+     *
+     * @param mode
+     * @return
+     */
+    public Observable<Boolean> setFocusMode(SettingsDefinitions.FocusMode mode) {
+        return Observable.create(e -> getCameraInstance().setFocusMode(mode, djiError -> {
+            if (djiError == null) {
+                e.onNext(true);
+            } else {
+                e.onNext(false);
+            }
+            e.onComplete();
+        }));
+    }
+
+    /**
+     * 获取镜头对焦模式
+     *
+     * @return
+     */
+    public Observable<SettingsDefinitions.FocusMode> getFocusMode() {
+        return Observable.create(e -> getCameraInstance().getFocusMode(
+                new CompletionCallbackWith<SettingsDefinitions.FocusMode>() {
+                    @Override
+                    public void onSuccess(SettingsDefinitions.FocusMode focusMode) {
+                        e.onNext(focusMode);
+                        e.onComplete();
+                    }
+
+                    @Override
+                    public void onFailure(DJIError djiError) {
+                        if (djiError == null) {
+                            e.onNext(SettingsDefinitions.FocusMode.UNKNOWN);
+                            e.onComplete();
+                        }
+                    }
+                }));
+    }
+
+    /**
+     * 是否支持数码变焦
+     *
+     * @return
+     */
+    public Observable<Boolean> isDigitalZoomSupproted() {
+        return Observable.create(e -> {
+            e.onNext(getCameraInstance().isDigitalZoomSupported());
+            e.onComplete();
+        });
+    }
+
+    /**
+     * 放大或缩小镜头
+     *
+     * @return
+     */
+    public Observable<String> startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection direction) {
+        return Observable.create(e -> {
+            getCameraInstance().startContinuousOpticalZoom(direction
+                    , SettingsDefinitions.ZoomSpeed.MODERATELY_SLOW, djiError -> {
+                        if (djiError == null) {
+                            e.onNext("zoom in");
+                        } else {
+                            e.onNext("zoom out");
+                        }
+                        e.onComplete();
+                    });
+        });
+    }
+
+    /**
+     * 停止缩放
+     *
+     * @return
+     */
+    public Observable<String> stopContinuousOpticalZoom() {
+        return Observable.create(e -> {
+            getCameraInstance().stopContinuousOpticalZoom(djiError -> {
+                if (djiError == null) {
+                    e.onNext("zoom stop");
+                } else {
+                    e.onNext(djiError.getDescription());
+                }
+
+            });
+        });
+    }
+
+    /**
+     * @return
+     */
+    public Observable<String> setOpticalZoomMultiplier(int i) {
+        return Observable.create(e -> {
+            getCameraInstance().setTapZoomMultiplier(i, new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    if (djiError == null) {
+                        e.onNext("zoom multiplier stop");
+                    } else {
+                        e.onNext(djiError.getDescription());
+                    }
+
+                }
+            });
+        });
+    }
+
+    /**
+     * @return
+     */
+    public Observable<Integer> getFocalLengStep() {
+        return Observable.create(e -> {
+            getCameraInstance().getOpticalZoomFocalLength(new CompletionCallbackWith<Integer>() {
+                @Override
+                public void onSuccess(Integer integer) {
+                    e.onNext(integer);
+                    e.onComplete();
+                }
+
+                @Override
+                public void onFailure(DJIError djiError) {
+                    e.onNext(-1);
+                    e.onComplete();
+                }
+            });
+        });
+    }
+
+    /**
+     * @return
+     */
+    public Observable<String> getOpticalFocalSpec() {
+        return Observable.create(e -> {
+            getCameraInstance().getOpticalZoomSpec(new CompletionCallbackWith<SettingsDefinitions.OpticalZoomSpec>() {
+                @Override
+                public void onSuccess(SettingsDefinitions.OpticalZoomSpec opticalZoomSpec) {
+                    e.onNext("min:" + opticalZoomSpec.getMinFocalLength() +
+                            "," + opticalZoomSpec.getMaxFocalLength() +
+                            "," + opticalZoomSpec.getFocalLengthStep());
+                }
+
+                @Override
+                public void onFailure(DJIError djiError) {
+                    e.onNext(djiError.getDescription());
+                }
+            });
+        });
+
+    }
+
+    /**
+     * @param step
+     * @return
+     */
+    public Observable<String> setOpticalZoomFocalLength(int step) {
+        return Observable.create(e -> {
+                    getCameraInstance().setOpticalZoomFocalLength(step, djiError -> {
+                        if (djiError == null) {
+                            e.onNext("zoom multiplier stop");
+                        } else {
+                            e.onNext(djiError.getDescription());
+                        }
+                        e.onComplete();
+                    });
+                }
+        );
+    }
+
+    /**
+     * @return
+     */
+    public Observable<String> getFocusTarget() {
+        return Observable.create(e -> {
+            getCameraInstance().getFocusTarget(new CompletionCallbackWith<PointF>() {
+                @Override
+                public void onSuccess(PointF pointF) {
+                    e.onNext("pointf,x:" + pointF.x + ",y:" + pointF.y);
+                }
+
+                @Override
+                public void onFailure(DJIError djiError) {
+                    e.onNext(djiError.getDescription());
+                }
+
+            });
+        });
+    }
+
+    public Observable<String> setFocusTarget(PointF point) {
+        return Observable.create(e -> {
+            getCameraInstance().tapZoomAtTarget(point, new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    if (djiError == null)
+                        e.onNext("success!!! pointf,x:" + point.x + ",y:" + point.y);
+                }
+            });
+        });
+    }
+
 }

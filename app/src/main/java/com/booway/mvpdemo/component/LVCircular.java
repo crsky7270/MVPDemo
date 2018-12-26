@@ -10,6 +10,7 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 
 import com.booway.mvpdemo.DemoApplicatoin;
+import com.booway.mvpdemo.TmpApplication;
 
 /**
  * 创建人：wandun

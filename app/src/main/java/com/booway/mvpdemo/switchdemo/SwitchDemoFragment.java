@@ -25,6 +25,7 @@ import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListFragment;
 import com.booway.mvpdemo.R;
 //import com.booway.mvpdemo.component.CircularLoadingView;
+import com.booway.mvpdemo.TmpApplication;
 import com.booway.mvpdemo.component.LVCircular;
 import com.booway.mvpdemo.component.LoadView;
 import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
@@ -461,7 +462,13 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
 //        CircularLoadingView.getInstance().startAnim();
+
+//        Observable.just(1).subscribe(integer -> {
+//            LogUtils.d(TAG, integer + "," + Thread.currentThread().getName());
+//        });
 
 
         initData();
@@ -485,8 +492,8 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 //                .subscribe(result -> {
 //                    ToastUtils.showToast(result);
 //                });
-        mDjiSdkComponent.getMediaFileList().subscribe(result->{
-            if(result!=null)
+        mDjiSdkComponent.getMediaFileList().subscribe(result -> {
+            if (result != null)
                 ToastUtils.showToast("ok");
         });
         mDjiSdkComponent.getMediaFileList().subscribe();

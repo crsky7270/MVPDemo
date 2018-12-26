@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,18 +13,25 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListFragment;
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
 import com.booway.mvpdemo.utils.ActivityUtils;
+import com.booway.mvpdemo.utils.LogUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
 
+import org.reactivestreams.Subscription;
+
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
@@ -31,12 +40,30 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import dagger.android.support.DaggerAppCompatActivity;
+import dji.common.error.DJIError;
+import dji.common.error.DJISDKError;
+import dji.log.DJILog;
+import dji.sdk.base.BaseComponent;
+import dji.sdk.base.BaseProduct;
 import dji.sdk.sdkmanager.DJISDKManager;
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 public class SwitchDemoActivity extends DaggerAppCompatActivity {
+    private static final String TAG = SwitchDemoActivity.class.getName();
 
     @Inject
     SwitchDemoFragment mFragment;
@@ -47,8 +74,8 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
     @BindView(R.id.coordinatorLayout)
     CoordinatorLayout mCoordinatorLayout;
 
-    @Inject
-    DjiSdkComponent mDjiSdkComponent;
+//    @Inject
+//    DjiSdkComponent mDjiSdkComponent;
 
     private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             Manifest.permission.VIBRATE,
@@ -89,21 +116,91 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
         ActivityUtils.switchFragment(SwitchDemoActivity.class,
                 getSupportFragmentManager(), fragment, R.id.contentFrame);
 
-//        ToastUtils.showToast("大疆SDK注册中...，请稍后");
-//        Flowable.just(getApplicationContext())
-//                .flatMap(context -> mDjiSdkComponent.Register(context)).subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(s -> {
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(3);
+        list.add(2);
+        Observable.fromIterable(list).sorted().subscribe(
+                new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+                        LogUtils.d(integer + "");
+                    }
+                }
+        );
+
+
+//        Observable.create((ObservableOnSubscribe<Integer>) e -> {
+//            for (int i = 1; i <= 5; i++) {
+//                e.onNext(i);
+//            }
+//        }).concatMap(new Function<Integer, ObservableSource<String>>() {
+//            @Override
+//            public ObservableSource<String> apply(Integer integer) throws Exception {
+//                final List<String> list = new ArrayList<>();
+//                for (int i = 0; i < 3; i++) {
+//                    list.add("I am integer " + integer + "");
+//                }
+//                return Observable.fromIterable(list).delay(10, TimeUnit.MILLISECONDS);
+//            }
+//        }).subscribe(e -> {
+//            LogUtils.d(e);
+//        });
+
+//        Flowable.interval(200,TimeUnit.MILLISECONDS).
+
+//        Flowable.just(1).interval(200,TimeUnit.MILLISECONDS);
 //
-//                    ToastUtils.showToast(s);
-//                    SwitchDemoFragment fragment =
-//                            (SwitchDemoFragment) getSupportFragmentManager()
-//                                    .findFragmentById(R.id.contentFrame);
-//                    if (fragment == null)
-//                        fragment = mFragment;
-//                    ActivityUtils.switchFragment(SwitchDemoActivity.class,
-//                            getSupportFragmentManager(), fragment, R.id.contentFrame);
+//        Flowable.interval(200,TimeUnit.MILLISECONDS);
+//
+//        Flowable flowable=Flowable.create(new FlowableOnSubscribe<Integer>() {
+//            @Override
+//            public void subscribe(FlowableEmitter<Integer> e) throws Exception {
+//                e.onNext(1);
+//            }
+//        }, BackpressureStrategy.BUFFER);
+
+//        Flowable.interval(200,TimeUnit.MILLISECONDS).
+
+//        Flowable.interval(3,TimeUnit.SECONDS)
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<Long>() {
+//                    @Override
+//                    public void accept(Long aLong) throws Exception {
+//                        LogUtils.d(aLong+++"");
+//                    }
 //                });
+
+//        Observable.create(e->{
+//
+//        }).filter().subscribeOn().observeOn().subscribe();
+
+//        Observable.create((ObservableOnSubscribe<Integer>) e -> {
+//            e.onNext(1);
+//        }).subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .doOnNext(e -> {
+//
+//                }).flatMap(new Function<Integer, ObservableSource<?>>() {
+//            @Override
+//            public ObservableSource<?> apply(Integer integer) throws Exception {
+//                return Observable.create(e -> {
+//                    e.onNext(1);
+//                });
+//            }
+//        }).observeOn(Schedulers.io())
+//                .subscribe();
+//
+//
+//        Observable<Integer> ob1 = Observable.just(1);
+//        Observable<String> ob2 = Observable.just("a");
+//        Observable.zip(ob1, ob2, new BiFunction<Integer, String, Boolean>() {
+//            @Override
+//            public Boolean apply(Integer integer, String s) throws Exception {
+//                return null;
+//            }
+//        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+//                .subscribe();
     }
 
     @Override
@@ -152,23 +249,98 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
         }
         // If there is enough permission, we will start the registration
         if (missingPermission.isEmpty()) {
-            startSDKRegistration();
+//            startSDKRegistration();
         } else {
 //            ToastUtils.setResultToToast("请检查应用权限是否都已开启");
         }
     }
 
 
+//    private void startSDKRegistration() {
+//        if (isRegistrationInProgress.compareAndSet(false, true)) {
+//            ToastUtils.showToast("大疆SDK注册中...，请稍后");
+//            Flowable.just(getApplicationContext())
+//                    .flatMap(context -> mDjiSdkComponent.Register(context))
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(s -> {
+//                        ToastUtils.showToast(s);
+//                    });
+//        }
+//    }
+
+    public void showToast(final String msg) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(SwitchDemoActivity.this, msg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void startSDKRegistration() {
         if (isRegistrationInProgress.compareAndSet(false, true)) {
-            ToastUtils.showToast("大疆SDK注册中...，请稍后");
-            Flowable.just(getApplicationContext())
-                    .flatMap(context -> mDjiSdkComponent.Register(context))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(s -> {
-                        ToastUtils.showToast(s);
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    showToast( "registering, pls wait...");
+                    DJISDKManager.getInstance().registerApp(getApplicationContext(), new DJISDKManager.SDKManagerCallback() {
+                        @Override
+                        public void onRegister(DJIError djiError) {
+                            if (djiError == DJISDKError.REGISTRATION_SUCCESS) {
+                                DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.getDescription());
+                                DJISDKManager.getInstance().startConnectionToProduct();
+                                showToast("Register Success");
+                            } else {
+                                showToast( "Register sdk fails, check network is available");
+                            }
+                            Log.v(TAG, djiError.getDescription());
+                        }
+
+                        @Override
+                        public void onProductDisconnect() {
+                            Log.d(TAG, "onProductDisconnect");
+                            showToast("Product Disconnected");
+
+                        }
+                        @Override
+                        public void onProductConnect(BaseProduct baseProduct) {
+                            Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
+                            showToast("Product Connected");
+
+                        }
+                        @Override
+                        public void onComponentChange(BaseProduct.ComponentKey componentKey, BaseComponent oldComponent,
+                                                      BaseComponent newComponent) {
+
+                            if (newComponent != null) {
+                                newComponent.setComponentListener(new BaseComponent.ComponentListener() {
+
+                                    @Override
+                                    public void onConnectivityChange(boolean isConnected) {
+                                        Log.d(TAG, "onComponentConnectivityChanged: " + isConnected);
+                                    }
+                                });
+                            }
+                            Log.d(TAG,
+                                    String.format("onComponentChange key:%s, oldComponent:%s, newComponent:%s",
+                                            componentKey,
+                                            oldComponent,
+                                            newComponent));
+
+                        }
                     });
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        String action = intent.getAction();
+        if (UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)) {
+            Intent attachedIntent = new Intent();
+            attachedIntent.setAction(DJISDKManager.USB_ACCESSORY_ATTACHED);
+            sendBroadcast(attachedIntent);
         }
     }
 

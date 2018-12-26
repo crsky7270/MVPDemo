@@ -16,6 +16,7 @@ import android.view.animation.RotateAnimation;
 
 import com.booway.mvpdemo.DemoApplicatoin;
 import com.booway.mvpdemo.R;
+import com.booway.mvpdemo.TmpApplication;
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.utils.DisplayUtils;
 

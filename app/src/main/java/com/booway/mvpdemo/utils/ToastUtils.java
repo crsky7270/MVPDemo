@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.booway.mvpdemo.DemoApplicatoin;
+import com.booway.mvpdemo.TmpApplication;
 
 import dagger.android.support.DaggerApplication;
 

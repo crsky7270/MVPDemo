@@ -132,7 +132,7 @@
                     android:layout_alignParentLeft="true" />
 
                 <dji.ux.widget.FPVOverlayWidget
-                    android:id="@+id/test1"
+                    android:id="@+id/fpv_overlay_widget"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
@@ -166,23 +166,32 @@
                     <Button
                         android:id="@+id/data_list"
                         android:layout_width="120dp"
-                        android:layout_height="35dp"
-                        android:layout_margin="5dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="2dp"
                         android:background="@color/gray"
-                        android:text="点位列表"
+                        android:text="是否支持数码变焦"
                         android:textColor="@color/white"
                         android:textSize="20sp" />
 
                     <Button
                         android:id="@+id/collection"
                         android:layout_width="120dp"
-                        android:layout_height="35dp"
-                        android:layout_margin="5dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="2dp"
                         android:background="@color/gray"
                         android:text="定位"
                         android:textColor="@color/white"
                         android:textSize="20sp" />
 
+                    <Button
+                        android:id="@+id/stop"
+                        android:layout_width="120dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="2dp"
+                        android:background="@color/gray"
+                        android:text="定位"
+                        android:textColor="@color/white"
+                        android:textSize="20sp" />
                     <Button
                         android:id="@+id/shoot"
                         android:layout_width="40dp"

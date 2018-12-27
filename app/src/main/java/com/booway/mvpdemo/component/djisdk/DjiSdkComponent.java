@@ -371,6 +371,18 @@ public class DjiSdkComponent implements DjiSdkInterface {
                     error -> {
                         if (error == null) {
                             mediaFileList = mMediaManager.getSDCardFileListSnapshot();
+                            Collections.sort(mediaFileList, new Comparator<MediaFile>() {
+                                @Override
+                                public int compare(MediaFile lhs, MediaFile rhs) {
+                                    if (lhs.getTimeCreated() < rhs.getTimeCreated()) {
+                                        return 1;
+                                    } else if (lhs.getTimeCreated() > rhs.getTimeCreated()) {
+                                        return -1;
+                                    }
+                                    return 0;
+                                }
+                            });
+
                             e.onSuccess(mediaFileList);
                         }
                     });

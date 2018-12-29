@@ -94,6 +94,17 @@ public class DjiSdkComponent implements DjiSdkInterface {
 
     private MediaManager mMediaManager;
 
+    private MediaManager.FileListState currentFileListState = MediaManager.FileListState.UNKNOWN;
+
+//    private int scheduleState = 0;
+
+    private MediaManager.FileListStateListener updateFileListStateListener = new MediaManager.FileListStateListener() {
+        @Override
+        public void onFileListStateChange(MediaManager.FileListState state) {
+            currentFileListState = state;
+        }
+    };
+
     @Inject
     public DjiSdkComponent() {
 
@@ -153,6 +164,17 @@ public class DjiSdkComponent implements DjiSdkInterface {
             }
         }
         return false;
+    }
+
+    private synchronized Camera getThermalCameraInstance() {
+        if (getProductInstance() == null) return null;
+        Camera thermalCamera = null;
+        List<Camera> cameras = ((Aircraft) getProductInstance()).getCameras();
+        for (Camera camera : cameras) {
+            if (camera.isThermalCamera())
+                thermalCamera = camera;
+        }
+        return thermalCamera;
     }
 
     /**
@@ -267,20 +289,21 @@ public class DjiSdkComponent implements DjiSdkInterface {
      * }
      * });
      */
-    public Flowable<Boolean> shootPhoto() {
-        return Flowable.create(e -> KeyManager.getInstance()
+    public Observable<String> shootPhoto() {
+        return Observable.create(e -> KeyManager.getInstance()
                 .performAction(CameraKey.create(CameraKey.START_SHOOT_PHOTO, VISUAL_CAMERA_INDEX),
                         new ActionCallback() {
                             @Override
                             public void onSuccess() {
-                                e.onNext(true);
+                                e.onNext("shoot success");
+                                e.onComplete();
                             }
 
                             @Override
                             public void onFailure(@NonNull DJIError error) {
-                                e.onNext(false);
+                                e.onNext(error.getDescription());
                             }
-                        }), BackpressureStrategy.BUFFER);
+                        }));
     }
 
     /**
@@ -315,10 +338,10 @@ public class DjiSdkComponent implements DjiSdkInterface {
                                     if ((mediaManager.getSDCardFileListState() == MediaManager.FileListState.SYNCING) ||
                                             (mediaManager.getSDCardFileListState() == MediaManager.FileListState.DELETING)) {
                                         e.onNext(false);
-                                        LogUtils.d(TAG, "Media Manager is busy.");
+                                        DJILog.d(TAG, "Media Manager is busy.");
                                     } else {
                                         e.onNext(true);
-                                        LogUtils.d(TAG, "Set MediaDownload Mode success.");
+                                        DJILog.d(TAG, "Set MediaDownload Mode success.");
                                     }
                                 }
                             });
@@ -326,7 +349,7 @@ public class DjiSdkComponent implements DjiSdkInterface {
                 } else if (null != getCameraInstance() && !getCameraInstance().isMediaDownloadModeSupported()) {
                     e.onNext(false);
                 }
-                LogUtils.d(TAG, "Media Download Mode not Supported");
+                DJILog.d(TAG, "Media Download Mode not Supported");
             } else {
                 e.onNext(false);
             }
@@ -336,62 +359,92 @@ public class DjiSdkComponent implements DjiSdkInterface {
     /**
      * 初始化
      */
-    public void initMediaManager() {
-        if (null != getCameraInstance() && getCameraInstance().isMediaDownloadModeSupported()) {
-            mMediaManager = getCameraInstance().getMediaManager();
-            if (null != mMediaManager) {
-                getCameraInstance().setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD,
-                        (DJIError cbError) -> {
-                            if (cbError == null) {
-                                if ((mMediaManager.getSDCardFileListState() == MediaManager.FileListState.SYNCING) ||
-                                        (mMediaManager.getSDCardFileListState() == MediaManager.FileListState.DELETING)) {
-                                    LogUtils.d(TAG, "Media Manager is busy.");
-                                } else {
-                                    LogUtils.d(TAG, "Set MediaDownload Mode success.");
+    public Observable<Boolean> initMediaManager(boolean isThermalCamera) {
+        return Observable.create(e -> {
+            Camera camera = isThermalCamera ? getThermalCameraInstance() : getCameraInstance();
+            if (null != camera && camera.isMediaDownloadModeSupported()) {
+                mMediaManager = camera.getMediaManager();
+                if (null != mMediaManager) {
+                    mMediaManager.addUpdateFileListStateListener(this.updateFileListStateListener);
+                    camera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD,
+                            (DJIError cbError) -> {
+                                if (cbError == null) {
+                                    if ((mMediaManager.getSDCardFileListState() == MediaManager.FileListState.SYNCING) ||
+                                            (mMediaManager.getSDCardFileListState() == MediaManager.FileListState.DELETING)) {
+                                        e.onNext(false);
+                                        DJILog.d(TAG, "Media Manager is busy.");
+                                    } else {
+                                        scheduler = mMediaManager.getScheduler();
+                                        e.onNext(true);
+                                        e.onComplete();
+
+                                        DJILog.d(TAG, "Set MediaDownload Mode success.");
+                                    }
                                 }
-                            }
-                        });
-                scheduler = mMediaManager.getScheduler();
-            } else if (null != getCameraInstance() && !getCameraInstance().isMediaDownloadModeSupported()) {
-                LogUtils.d(TAG, "get media manager failed");
+                            });
+                } else if (null != camera && !camera.isMediaDownloadModeSupported()) {
+                    e.onNext(false);
+                    DJILog.d(TAG, "get media manager failed");
+                }
+                e.onNext(false);
+                DJILog.d(TAG, "Media Download Mode not Supported");
+            } else {
+                e.onNext(false);
+                DJILog.d(TAG, "Unknow error");
             }
-            LogUtils.d(TAG, "Media Download Mode not Supported");
-        } else {
-            LogUtils.d(TAG, "Unknow error");
-        }
+        });
     }
 
     /**
      * @return
      */
-    public Maybe<List<MediaFile>> getMediaFileList() {
-        initMediaManager();
-        return Maybe.create(e -> {
-            mMediaManager.refreshFileListOfStorageLocation(SettingsDefinitions.StorageLocation.SDCARD,
-                    error -> {
-                        if (error == null) {
-                            mediaFileList = mMediaManager.getSDCardFileListSnapshot();
-                            Collections.sort(mediaFileList, new Comparator<MediaFile>() {
-                                @Override
-                                public int compare(MediaFile lhs, MediaFile rhs) {
-                                    if (lhs.getTimeCreated() < rhs.getTimeCreated()) {
-                                        return 1;
-                                    } else if (lhs.getTimeCreated() > rhs.getTimeCreated()) {
-                                        return -1;
+    public Observable<String> getMediaFileList() {
+        return Observable.create(e -> {
+            initMediaManager(false).subscribe(bool -> {
+                if (bool) {
+//                    scheduleState = 0;
+                    mMediaManager.refreshFileListOfStorageLocation(SettingsDefinitions.StorageLocation.SDCARD,
+                            error -> {
+                                if (error == null) {
+                                    if (currentFileListState != MediaManager.FileListState.INCOMPLETE) {
+                                        if (mediaFileList != null)
+                                            mediaFileList.clear();
                                     }
-                                    return 0;
+                                    mediaFileList = mMediaManager.getSDCardFileListSnapshot();
+                                    Collections.sort(mediaFileList, (lhs, rhs) -> {
+                                        if (lhs.getTimeCreated() < rhs.getTimeCreated()) {
+                                            return -1;
+                                        } else if (lhs.getTimeCreated() > rhs.getTimeCreated()) {
+                                            return 1;
+                                        }
+                                        return 0;
+                                    });
+
+//                                    scheduler.resume(new CommonCallbacks.CompletionCallback() {
+//                                        @Override
+//                                        public void onResult(DJIError error) {
+//                                            if (error == null) {
+//                                                getThumbnails();
+//                                                getPreviews();
+//                                            }
+//                                        }
+//                                    });
+                                    e.onNext("get media file list success");
+                                    e.onComplete();
+                                } else {
+                                    e.onNext(error.getDescription());
                                 }
                             });
-
-                            e.onSuccess(mediaFileList);
-                        }
-                    });
+                } else {
+                    e.onNext("get media file list init manager failed!");
+                }
+            });
         });
     }
 
     private void getThumbnails() {
         if (mediaFileList.size() <= 0) {
-            LogUtils.d(TAG, "No File info for downloading thumbnails");
+            DJILog.d(TAG, "No File info for downloading thumbnails");
             return;
         }
         for (int i = 0; i < mediaFileList.size(); i++) {
@@ -401,7 +454,7 @@ public class DjiSdkComponent implements DjiSdkInterface {
 
     private void getPreviews() {
         if (mediaFileList.size() <= 0) {
-            LogUtils.d(TAG, "No File info for downloading previews");
+            DJILog.d(TAG, "No File info for downloading previews");
             return;
         }
         for (int i = 0; i < mediaFileList.size(); i++) {
@@ -422,57 +475,92 @@ public class DjiSdkComponent implements DjiSdkInterface {
     public FetchMediaTask.Callback taskCallback = (file, option, error) -> {
         if (null == error) {
             if (option == FetchMediaTaskContent.PREVIEW) {
-
+//                scheduleState = 99;
             }
             if (option == FetchMediaTaskContent.THUMBNAIL) {
-
+//                scheduleState = 88;
             }
         } else {
-            LogUtils.e(TAG, "Fetch Media Task Failed" + error.getDescription());
+            DJILog.e(TAG, "Fetch Media Task Failed" + error.getDescription());
         }
     };
 
+    public Observable<String> downloadLastPreviewMediaFile() {
+        return Observable.create(e -> {
+            if (mediaFileList != null) {
+                MediaFile file = mediaFileList.get(mediaFileList.size() - 1);
+                if (file.getPreview() == null) {
+                    file.fetchPreview(new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            if (djiError == null) {
+                                Bitmap bitmap = file.getThumbnail();
+                                e.onNext(file.getFileName() + "," + ",fetch success," + bitmap.getByteCount());
 
-    public Flowable<Bitmap> downloadLastThumMediaFile() {
-        return Flowable.create(e -> {
-            MediaFile file = mediaFileList.get(mediaFileList.size() - 1);
-            file.fetchThumbnail(new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError djiError) {
-                    if (djiError == null) {
-                        Bitmap bitmap = file.getThumbnail();
-                        e.onNext(bitmap);
-                    } else {
-//                        e.onNext("error");
-                    }
-                    e.onComplete();
+                            } else {
+                                e.onNext(djiError.getDescription());
+                            }
+                        }
+                    });
+                } else {
+                    e.onNext(file.getFileName() + "," + " no fectch return");
                 }
-            });
-        }, BackpressureStrategy.BUFFER);
+            } else {
+                e.onNext("media file list is null");
+            }
+            e.onComplete();
+        });
+    }
+
+    public Observable<String> downloadLastThumMediaFile() {
+        return Observable.create(e -> {
+            if (mediaFileList != null) {
+                MediaFile file = mediaFileList.get(mediaFileList.size() - 1);
+                if (file.getThumbnail() == null) {
+                    file.fetchThumbnail(new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            if (djiError == null) {
+                                Bitmap bitmap = file.getThumbnail();
+                                e.onNext(file.getFileName() + "," + ",fetch success," + bitmap.getByteCount());
+
+                            } else {
+                                e.onNext(djiError.getDescription());
+                            }
+                            e.onComplete();
+                        }
+                    });
+                } else {
+                    e.onNext(file.getFileName() + "," + " no fectch return");
+                }
+            } else {
+                e.onNext("media file list is null");
+            }
+        });
     }
 
 
     public Flowable<String> downloadLastMediaFile(String tmpFileName) {
         return Flowable.create(e -> {
             getMediaFileList().subscribe(files -> {
-                MediaFile file = files.get(files.size() - 1);
+                MediaFile file = mediaFileList.get(mediaFileList.size() - 1);
                 file.fetchFileData(new File(MEDIA_DOWNLOAD_DIR), tmpFileName, new DownloadListener<String>() {
                     @Override
                     public void onStart() {
                         e.onNext("start");
-                        LogUtils.d(TAG, "start");
+                        DJILog.d(TAG, "start");
                     }
 
                     @Override
                     public void onRateUpdate(long total, long current, long persize) {
                         e.onNext("p1:" + total + ",p2:" + current + "p3:" + persize);
-                        LogUtils.d(TAG, "p1:" + total + ",p2:" + current + "p3:" + persize);
+                        DJILog.d(TAG, "p1:" + total + ",p2:" + current + "p3:" + persize);
                     }
 
                     @Override
                     public void onProgress(long total, long current) {
                         e.onNext("p1:" + total + ",p2:" + current);
-                        LogUtils.d(TAG, "p1:" + total + ",p2:" + current);
+                        DJILog.d(TAG, "p1:" + total + ",p2:" + current);
                     }
 
                     @Override
@@ -480,13 +568,14 @@ public class DjiSdkComponent implements DjiSdkInterface {
                         getProductInstance().getCamera()
                                 .setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, null);
                         e.onNext("success:" + filePath);
-                        LogUtils.d(TAG, "success:" + filePath);
+                        e.onComplete();
+                        DJILog.d(TAG, "success:" + filePath);
                     }
 
                     @Override
                     public void onFailure(DJIError djiError) {
                         e.onNext("error:" + djiError.getDescription());
-                        LogUtils.d(TAG, "error:" + djiError.getDescription());
+                        DJILog.d(TAG, "error:" + djiError.getDescription());
                     }
                 });
             });
@@ -763,7 +852,7 @@ public class DjiSdkComponent implements DjiSdkInterface {
                 @Override
                 public void onFailure(DJIError djiError) {
                     e.onNext(false);
-                    LogUtils.d(TAG, djiError.getDescription());
+                    DJILog.d(TAG, djiError.getDescription());
                     e.onComplete();
                 }
             });
@@ -989,6 +1078,20 @@ public class DjiSdkComponent implements DjiSdkInterface {
                 }
             });
         });
+    }
+
+    /**
+     * 退出飞控界面时销毁
+     */
+    public void destory() {
+        if (mMediaManager != null) {
+            mMediaManager.stop(null);
+            mMediaManager.removeFileListStateCallback(updateFileListStateListener);
+            mMediaManager.exitMediaDownloading();
+            if (scheduler != null) {
+                scheduler.removeAllTasks();
+            }
+        }
     }
 
 }

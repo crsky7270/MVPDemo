@@ -63,6 +63,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".dji.DjiActivity">
+
         </activity>
 
         <!-- AMaps -->

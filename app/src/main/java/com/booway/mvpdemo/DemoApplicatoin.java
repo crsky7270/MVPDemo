@@ -19,7 +19,7 @@ import dagger.android.DaggerApplication;
 public class DemoApplicatoin extends DaggerApplication {
     public static Context context;
 
-    private TmpApplication tmpApplication;
+//    private TmpApplication tmpApplication;
 
     @Inject
     DemoRespository mDemoRespository;
@@ -33,7 +33,7 @@ public class DemoApplicatoin extends DaggerApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        tmpApplication.onCreate();
+//        tmpApplication.onCreate();
         context = this;
     }
 
@@ -41,9 +41,9 @@ public class DemoApplicatoin extends DaggerApplication {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         Helper.install(DemoApplicatoin.this);
-        if (tmpApplication == null) {
-            tmpApplication = new TmpApplication();
-            tmpApplication.setContext(this);
-        }
+//        if (tmpApplication == null) {
+//            tmpApplication = new TmpApplication();
+//            tmpApplication.setContext(this);
+//        }
     }
 }

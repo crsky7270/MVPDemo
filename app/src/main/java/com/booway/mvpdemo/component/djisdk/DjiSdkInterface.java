@@ -21,7 +21,7 @@ import io.reactivex.Observable;
 
 public interface DjiSdkInterface {
 
-    void initMediaManager();
+    Observable<Boolean> initMediaManager(boolean isThermalCamera);
 
     public Flowable<String> Register(Context context);
 
@@ -37,15 +37,15 @@ public interface DjiSdkInterface {
 
     boolean isMediaManagerAvailable();
 
-    Flowable<Boolean> shootPhoto();
+    Observable<String> shootPhoto();
 
     void showLeftCameraVideoSource();
 
     void showRightCameraVideoSource();
 
-    Flowable<Bitmap> downloadLastThumMediaFile();
+    Observable<String> downloadLastThumMediaFile();
 
-    Maybe<List<MediaFile>> getMediaFileList();
+    Observable<String> getMediaFileList();
 
     Flowable<AirCraftLocationBean> getAircraftLocation();
 
@@ -80,5 +80,7 @@ public interface DjiSdkInterface {
     Observable<String> getFocusTarget();
 
     Observable<String> setFocusTarget(PointF point);
+
+    Observable<String> downloadLastPreviewMediaFile();
 
 }

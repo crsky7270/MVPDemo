@@ -139,13 +139,16 @@ public class DjiActivity extends DaggerAppCompatActivity  {
 //                .subscribe(msg -> {
 //                    ToastUtils.showToast(msg.toString());
 //                });
+        mDjiSdkComponent.shootPhoto().subscribe(e->{
+           ToastUtils.showToast(e);
+        });
 
-        mDjiSdkComponent.getFocusTarget()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(e -> {
-                    ToastUtils.showToast(e);
-                });
+//        mDjiSdkComponent.getFocusTarget()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(e -> {
+//                    ToastUtils.showToast(e);
+//                });
 
 //        mDjiSdkComponent.getOpticalFocalSpec()
 //                .subscribeOn(Schedulers.io())
@@ -225,6 +228,7 @@ public class DjiActivity extends DaggerAppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dji);
         mUnbinder = ButterKnife.bind(this);
+
 
         mFPVOverlayWidget.setOnTouchListener(new View.OnTouchListener() {
             @Override

@@ -2,6 +2,7 @@ package com.booway.mvpdemo.switchdemo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.TmpApplication;
 import com.booway.mvpdemo.component.LVCircular;
 import com.booway.mvpdemo.component.LoadView;
+import com.booway.mvpdemo.component.djisdk.AirCraftLocationBean;
 import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.di.ActivityScoped;
@@ -36,8 +38,10 @@ import com.booway.mvpdemo.utils.AlertDialogUtils;
 import com.booway.mvpdemo.utils.DisplayUtils;
 import com.booway.mvpdemo.utils.LogUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
+import com.google.common.eventbus.Subscribe;
 
 import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscription;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
@@ -55,12 +59,19 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import dagger.android.support.DaggerFragment;
 import dji.sdk.media.MediaFile;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Emitter;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.FlowableSubscriber;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -217,8 +228,8 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 
 //                    ToastUtils.showToast(bitmap);
 //ToastUtils.showToast(bitmap);
-                    ToastUtils.showToast(System.currentTimeMillis() + "");
-                    mImageView.setImageBitmap(bitmap);
+                    ToastUtils.showToast(System.currentTimeMillis() + bitmap);
+//                    mImageView.setImageBitmap(bitmap);
                 });
 
 //        mDjiSdkComponent.getMediaFileList().flatMap(e -> {
@@ -463,6 +474,187 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        Observable.create(new ObservableOnSubscribe<Integer>() {
+//            @Override
+//            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
+//                for (int i = 0; i < 10; i++) {
+//                    e.onNext(i);
+//                    Thread.sleep(2000);
+//                }
+//            }
+//        }).subscribe(e -> {
+//            LogUtils.d(e.toString());
+//        });
+
+        Flowable.interval(100, TimeUnit.MILLISECONDS).repeat()
+                .subscribe(
+                        e -> {
+                            mDjiSdkComponent.getAircraftLocation().subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new FlowableSubscriber<AirCraftLocationBean>() {
+                                        private Subscription mSubscription;
+
+                                        @Override
+                                        public void onSubscribe(Subscription s) {
+                                            mSubscription = s;
+                                            s.request(Integer.MAX_VALUE);
+                                        }
+
+                                        @Override
+                                        public void onNext(AirCraftLocationBean airCraftLocationBean) {
+//amputl.cal(ll1,ll2);
+//if(reulst>20){
+//    mDjiSdkComponent.shootPhoto();
+//}
+//mSubscription.cancel();
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable t) {
+
+                                        }
+
+                                        @Override
+                                        public void onComplete() {
+
+                                        }
+                                    });
+                        }
+                );
+
+        Flowable.create(new FlowableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(FlowableEmitter<Integer> e) throws Exception {
+                for (int i = 0; i < 10; i++) {
+                    e.onNext(i);
+//                    Thread.sleep(2000);
+                }
+            }
+        }, BackpressureStrategy.BUFFER)
+                .subscribe(new FlowableSubscriber<Integer>() {
+                    private Subscription mSubscription;
+
+                    @Override
+                    public void onSubscribe(Subscription s) {
+                        mSubscription = s;
+                        s.request(Integer.MAX_VALUE);
+                    }
+
+                    @Override
+                    public void onNext(Integer integer) {
+                        LogUtils.d(integer + "********");
+                        if (integer == 5)
+                            mSubscription.cancel();
+
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
+
+//        Flowable.create((FlowableEmitter<Integer> e) -> {
+//            for (int j = 0; j < 3; j++) {
+//                e.onNext(j);
+//                Thread.sleep(1000);
+//                LogUtils.d("******" + j);
+//            }
+//        }, BackpressureStrategy.BUFFER).subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new FlowableSubscriber<Integer>() {
+//                               private Subscription mSubscription;
+//
+//                               @Override
+//                               public void onSubscribe(Subscription s) {
+//                                   mSubscription = s;
+//                               }
+//
+//                               @Override
+//                               public void onNext(Integer integer) {
+//
+//                                   mSubscription.cancel();
+//
+//                                   LogUtils.d("***end***");
+//                               }
+//
+//                               @Override
+//                               public void onError(Throwable t) {
+//
+//                               }
+//
+//                               @Override
+//                               public void onComplete() {
+//
+//                               }
+//                           }
+//
+//                );
+
+//        int i = 10;
+//        mDjiSdkComponent.getAircraftLocation().subscribe(new FlowableSubscriber<AirCraftLocationBean>() {
+//            private Subscription mSubscription;
+//
+//            @Override
+//            public void onSubscribe(Subscription s) {
+//                mSubscription = s;
+//            }
+//
+//            @Override
+//            public void onNext(AirCraftLocationBean airCraftLocationBean) {
+//                mSubscription.cancel();
+//            }
+//
+//            @Override
+//            public void onError(Throwable t) {
+//
+//            }
+//
+//            @Override
+//            public void onComplete() {
+//
+//            }
+//        });
+
+
+//        Flowable.interval(5, TimeUnit.SECONDS).repeat()
+//                .subscribe(new Consumer<Long>() {
+//                    @Override
+//                    public void accept(Long aLong) throws Exception {
+//
+//                        LogUtils.d(aLong + "");
+//
+//                        mDjiSdkComponent.getAircraftLocation().subscribeOn(Schedulers.io())
+//                                .observeOn(AndroidSchedulers.mainThread())
+//                                .subscribe(new FlowableSubscriber<AirCraftLocationBean>() {
+//                                    @Override
+//                                    public void onSubscribe(Subscription s) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onNext(AirCraftLocationBean airCraftLocationBean) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onError(Throwable t) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onComplete() {
+//
+//                                    }
+//                                });
+//                    }
+//                });
 
 //        CircularLoadingView.getInstance().startAnim();
 
@@ -471,7 +663,7 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 //        });
 
 
-        initData();
+//        initData();
 
 
 //        asyncRxjava();
@@ -492,11 +684,78 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 //                .subscribe(result -> {
 //                    ToastUtils.showToast(result);
 //                });
-        mDjiSdkComponent.getMediaFileList().subscribe(result -> {
-            if (result != null)
-                ToastUtils.showToast("ok");
-        });
-        mDjiSdkComponent.getMediaFileList().subscribe();
+        mDjiSdkComponent.getMediaFileList().subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(e -> {
+                    ToastUtils.showToast(e);
+                });
+
+//        mDjiSdkComponent.getMediaFileList().subscribe(result -> {
+//            ToastUtils.showToast("ok");
+//        });
+
+
+//        mDjiSdkComponent.shootPhoto()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .flatMap((Function<? super Boolean, ? extends Publisher<? extends R>>)
+//                        new Function<Boolean, Maybe<List<MediaFile>>>() {
+//                            @Override
+//                            public Maybe<List<MediaFile>> apply(Boolean aBoolean) throws Exception {
+//                                return mDjiSdkComponent.getMediaFileList();
+//                            }
+//                        })
+//                .observeOn(Schedulers.io())
+//                .flatMap(new Function<R, Publisher<Bitmap>>() {
+//                    @Override
+//                    public Publisher<Bitmap> apply(R r) throws Exception {
+//                        return mDjiSdkComponent.downloadLastThumMediaFile();
+//                    }
+//                }).observeOn(Schedulers.io())
+//                .subscribe(bitmap -> {
+//                    mImageView.setImageBitmap(bitmap);
+//                });
+
+//        mDjiSdkComponent.shootPhoto().subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(e -> {
+//                    ToastUtils.showToast("shoot ok");
+//                    mDjiSdkComponent.getMediaFileList().subscribe();
+//                });
+
+
+//        mDjiSdkComponent.shootPhoto().
+//        mDjiSdkComponent.shootPhoto()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .doOnNext(new Consumer<Boolean>() {
+//                    @Override
+//                    public void accept(Boolean aBoolean) throws Exception {
+//                        if(aBoolean)
+//                            ToastUtils.showToast("shoot ok");
+//                    }
+//                })
+//                .observeOn(Schedulers.io())
+//                .flatMap(new Function<Boolean, Publisher<?>>() {
+//                    @Override
+//                    public Publisher<?> apply(Boolean aBoolean) throws Exception {
+//
+//                        return mDjiSdkComponent.getMediaFileList().toFlowable();
+//                    }
+//                })
+//                .observeOn(Schedulers.io())
+//                .flatMap(new Function<Object, Publisher<Bitmap>>() {
+//                    @Override
+//                    public Publisher<Bitmap> apply(Object o) throws Exception {
+//                        return mDjiSdkComponent.downloadLastThumMediaFile();
+//                    }
+//                }).observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(bitmap -> {
+//                    mImageView.setImageBitmap(bitmap);
+//                });
+
+
+//        mDjiSdkComponent.getMediaFileList().subscribe();
     }
 
     @OnClick(R.id.openAircraft)

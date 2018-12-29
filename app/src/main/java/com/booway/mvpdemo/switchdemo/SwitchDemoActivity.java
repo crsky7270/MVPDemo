@@ -74,8 +74,8 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
     @BindView(R.id.coordinatorLayout)
     CoordinatorLayout mCoordinatorLayout;
 
-//    @Inject
-//    DjiSdkComponent mDjiSdkComponent;
+    @Inject
+    DjiSdkComponent mDjiSdkComponent;
 
     private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             Manifest.permission.VIBRATE,
@@ -249,25 +249,25 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
         }
         // If there is enough permission, we will start the registration
         if (missingPermission.isEmpty()) {
-//            startSDKRegistration();
+            startSDKRegistration();
         } else {
-//            ToastUtils.setResultToToast("请检查应用权限是否都已开启");
+            ToastUtils.showToast("请检查应用权限是否都已开启");
         }
     }
 
 
-//    private void startSDKRegistration() {
-//        if (isRegistrationInProgress.compareAndSet(false, true)) {
-//            ToastUtils.showToast("大疆SDK注册中...，请稍后");
-//            Flowable.just(getApplicationContext())
-//                    .flatMap(context -> mDjiSdkComponent.Register(context))
-//                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe(s -> {
-//                        ToastUtils.showToast(s);
-//                    });
-//        }
-//    }
+    private void startSDKRegistration() {
+        if (isRegistrationInProgress.compareAndSet(false, true)) {
+            ToastUtils.showToast("大疆SDK注册中...，请稍后");
+            Flowable.just(getApplicationContext())
+                    .flatMap(context -> mDjiSdkComponent.Register(context))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(s -> {
+                        ToastUtils.showToast(s);
+                    });
+        }
+    }
 
     public void showToast(final String msg) {
         runOnUiThread(new Runnable() {
@@ -277,62 +277,62 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
         });
     }
 
-    private void startSDKRegistration() {
-        if (isRegistrationInProgress.compareAndSet(false, true)) {
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    showToast( "registering, pls wait...");
-                    DJISDKManager.getInstance().registerApp(getApplicationContext(), new DJISDKManager.SDKManagerCallback() {
-                        @Override
-                        public void onRegister(DJIError djiError) {
-                            if (djiError == DJISDKError.REGISTRATION_SUCCESS) {
-                                DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.getDescription());
-                                DJISDKManager.getInstance().startConnectionToProduct();
-                                showToast("Register Success");
-                            } else {
-                                showToast( "Register sdk fails, check network is available");
-                            }
-                            Log.v(TAG, djiError.getDescription());
-                        }
-
-                        @Override
-                        public void onProductDisconnect() {
-                            Log.d(TAG, "onProductDisconnect");
-                            showToast("Product Disconnected");
-
-                        }
-                        @Override
-                        public void onProductConnect(BaseProduct baseProduct) {
-                            Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
-                            showToast("Product Connected");
-
-                        }
-                        @Override
-                        public void onComponentChange(BaseProduct.ComponentKey componentKey, BaseComponent oldComponent,
-                                                      BaseComponent newComponent) {
-
-                            if (newComponent != null) {
-                                newComponent.setComponentListener(new BaseComponent.ComponentListener() {
-
-                                    @Override
-                                    public void onConnectivityChange(boolean isConnected) {
-                                        Log.d(TAG, "onComponentConnectivityChanged: " + isConnected);
-                                    }
-                                });
-                            }
-                            Log.d(TAG,
-                                    String.format("onComponentChange key:%s, oldComponent:%s, newComponent:%s",
-                                            componentKey,
-                                            oldComponent,
-                                            newComponent));
-
-                        }
-                    });
-                }
-            });
-        }
-    }
+//    private void startSDKRegistration() {
+//        if (isRegistrationInProgress.compareAndSet(false, true)) {
+//            AsyncTask.execute(new Runnable() {
+//                @Override
+//                public void run() {
+//                    showToast( "registering, pls wait...");
+//                    DJISDKManager.getInstance().registerApp(getApplicationContext(), new DJISDKManager.SDKManagerCallback() {
+//                        @Override
+//                        public void onRegister(DJIError djiError) {
+//                            if (djiError == DJISDKError.REGISTRATION_SUCCESS) {
+//                                DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.getDescription());
+//                                DJISDKManager.getInstance().startConnectionToProduct();
+//                                showToast("Register Success");
+//                            } else {
+//                                showToast( "Register sdk fails, check network is available");
+//                            }
+//                            Log.v(TAG, djiError.getDescription());
+//                        }
+//
+//                        @Override
+//                        public void onProductDisconnect() {
+//                            Log.d(TAG, "onProductDisconnect");
+//                            showToast("Product Disconnected");
+//
+//                        }
+//                        @Override
+//                        public void onProductConnect(BaseProduct baseProduct) {
+//                            Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
+//                            showToast("Product Connected");
+//
+//                        }
+//                        @Override
+//                        public void onComponentChange(BaseProduct.ComponentKey componentKey, BaseComponent oldComponent,
+//                                                      BaseComponent newComponent) {
+//
+//                            if (newComponent != null) {
+//                                newComponent.setComponentListener(new BaseComponent.ComponentListener() {
+//
+//                                    @Override
+//                                    public void onConnectivityChange(boolean isConnected) {
+//                                        Log.d(TAG, "onComponentConnectivityChanged: " + isConnected);
+//                                    }
+//                                });
+//                            }
+//                            Log.d(TAG,
+//                                    String.format("onComponentChange key:%s, oldComponent:%s, newComponent:%s",
+//                                            componentKey,
+//                                            oldComponent,
+//                                            newComponent));
+//
+//                        }
+//                    });
+//                }
+//            });
+//        }
+//    }
 
     @Override
     protected void onNewIntent(Intent intent) {

@@ -31,6 +31,8 @@ import com.booway.mvpdemo.component.LVCircular;
 import com.booway.mvpdemo.component.LoadView;
 import com.booway.mvpdemo.component.djisdk.AirCraftLocationBean;
 import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
+import com.booway.mvpdemo.component.djisdk.DjiSdkResponse;
+import com.booway.mvpdemo.component.djisdk.DjiSdkResponse.DjiSdkResult;
 import com.booway.mvpdemo.data.entities.Demo;
 import com.booway.mvpdemo.di.ActivityScoped;
 import com.booway.mvpdemo.dji.DjiActivity;
@@ -58,6 +60,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import dagger.android.support.DaggerFragment;
+import dji.common.camera.SettingsDefinitions;
+import dji.common.camera.SettingsDefinitions.CameraMode;
 import dji.sdk.media.MediaFile;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Emitter;
@@ -75,6 +79,7 @@ import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -206,43 +211,96 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 
     @OnClick(R.id.showThumbView)
     public void showTumbView() {
-        ToastUtils.showToast("start download!");
-//        mDjiSdkComponent.downloadLastThumMediaFile()
-//                .doOnSubscribe(subscription ->
-//                mDjiSdkComponent.getMediaFileList()
-//                        .subscribe())
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .delay(1,TimeUnit.SECONDS)
-//                .subscribe(bitmap -> {
-//                    mImageView.setImageBitmap(bitmap);
-//                });
-
-        mDjiSdkComponent.downloadLastThumMediaFile()
+        ToastUtils.showToast("start to get Thum View!");
+        mDjiSdkComponent.getMediaFileList(false)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(bitmap -> {
-//                    int cout = bitmap.getByteCount();
-//                    int height = bitmap.getHeight();
-//                    int width = bitmap.getWidth();
-
-//                    ToastUtils.showToast(bitmap);
-//ToastUtils.showToast(bitmap);
-                    ToastUtils.showToast(System.currentTimeMillis() + bitmap);
-//                    mImageView.setImageBitmap(bitmap);
+                .doOnNext(response -> {
+                    if (response.getResult() == DjiSdkResult.Success)
+                        ToastUtils.showToast("get media file list success");
+                    else
+                        ToastUtils.showToast(response.getDJIError().getDescription());
+                })
+                .flatMap(response -> mDjiSdkComponent.getTheThumBitmap(
+                        response.getMediaFiles().get(response.getMediaFiles().size() - 1)))
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> mDjiSdkComponent.setCameraMode(CameraMode.SHOOT_PHOTO)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(response -> {
+                            Thread.sleep(2000);
+                            if (response.getResult() == DjiSdkResult.Success) {
+                                ToastUtils.showToast("已切换为拍照模式");
+                            } else {
+                                ToastUtils.showToast(response.getDJIError().getDescription());
+                            }
+                        }))
+                .subscribe(response -> {
+                    if (response.getResult() == DjiSdkResult.Success) {
+                        mImageView.setImageBitmap(response.getTempMediaFile().getThumbnail());
+                    } else {
+                        ToastUtils.showToast(response.getDJIError().getDescription());
+                    }
                 });
+    }
 
-//        mDjiSdkComponent.getMediaFileList().flatMap(e -> {
-//            return mDjiSdkComponent.getThumbnailByIndex(e.size() - 1, e);
-//        }).subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(bitmap -> {
-//                    int cout = bitmap.getByteCount();
-//                    int height = bitmap.getHeight();
-//                    int width = bitmap.getWidth();
-//
-//                    ToastUtils.showToast(bitmap);
-//                });
+    @BindView(R.id.PreviewView)
+    ImageView previewView;
+
+    @OnClick(R.id.btnPreview)
+    public void showPreview() {
+        ToastUtils.showToast("start to get Preview View!");
+        mDjiSdkComponent.getMediaFileList(false)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(response -> {
+                    if (response.getResult() == DjiSdkResult.Success)
+                        ToastUtils.showToast("get media file list success");
+                    else
+                        ToastUtils.showToast(response.getDJIError().getDescription());
+                })
+                .flatMap(response -> mDjiSdkComponent.getThePreviewBitmap(
+                        response.getMediaFiles().get(response.getMediaFiles().size() - 1)))
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> mDjiSdkComponent.setCameraMode(CameraMode.SHOOT_PHOTO)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(response -> {
+                            Thread.sleep(2000);
+                            if (response.getResult() == DjiSdkResult.Success) {
+                                ToastUtils.showToast("已切换为拍照模式");
+                            } else {
+                                ToastUtils.showToast(response.getDJIError().getDescription());
+                            }
+                        }))
+                .subscribe(response -> {
+                    if (response.getResult() == DjiSdkResult.Success) {
+                        previewView.setImageBitmap(response.getTempMediaFile().getPreview());
+                    } else {
+                        ToastUtils.showToast(response.getDJIError().getDescription());
+                    }
+                });
+    }
+
+    @BindView(R.id.shoot)
+    Button btnShoot;
+
+    @OnClick(R.id.shoot)
+    public void shootPhoto() {
+        btnShoot.setEnabled(false);
+        mDjiSdkComponent.startShootPhoto()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(response -> {
+                    Thread.sleep(2000);
+                    if (response.getResult() == DjiSdkResult.Success) {
+                        ToastUtils.showToast("拍照成功");
+                    } else {
+                        ToastUtils.showToast(response.getDJIError().getDescription());
+                    }
+
+                    btnShoot.setEnabled(true);
+                });
     }
 
     private void showsingleSelectDialog(List<Demo> demoList) {
@@ -486,41 +544,41 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 //            LogUtils.d(e.toString());
 //        });
 
-        Flowable.interval(100, TimeUnit.MILLISECONDS).repeat()
-                .subscribe(
-                        e -> {
-                            mDjiSdkComponent.getAircraftLocation().subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(new FlowableSubscriber<AirCraftLocationBean>() {
-                                        private Subscription mSubscription;
-
-                                        @Override
-                                        public void onSubscribe(Subscription s) {
-                                            mSubscription = s;
-                                            s.request(Integer.MAX_VALUE);
-                                        }
-
-                                        @Override
-                                        public void onNext(AirCraftLocationBean airCraftLocationBean) {
-//amputl.cal(ll1,ll2);
-//if(reulst>20){
-//    mDjiSdkComponent.shootPhoto();
-//}
-//mSubscription.cancel();
-                                        }
-
-                                        @Override
-                                        public void onError(Throwable t) {
-
-                                        }
-
-                                        @Override
-                                        public void onComplete() {
-
-                                        }
-                                    });
-                        }
-                );
+//        Flowable.interval(100, TimeUnit.MILLISECONDS).repeat()
+//                .subscribe(
+//                        e -> {
+//                            mDjiSdkComponent.getAircraftLocation().subscribeOn(Schedulers.io())
+//                                    .observeOn(AndroidSchedulers.mainThread())
+//                                    .subscribe(new FlowableSubscriber<AirCraftLocationBean>() {
+//                                        private Subscription mSubscription;
+//
+//                                        @Override
+//                                        public void onSubscribe(Subscription s) {
+//                                            mSubscription = s;
+//                                            s.request(Integer.MAX_VALUE);
+//                                        }
+//
+//                                        @Override
+//                                        public void onNext(AirCraftLocationBean airCraftLocationBean) {
+////amputl.cal(ll1,ll2);
+////if(reulst>20){
+////    mDjiSdkComponent.shootPhoto();
+////}
+////mSubscription.cancel();
+//                                        }
+//
+//                                        @Override
+//                                        public void onError(Throwable t) {
+//
+//                                        }
+//
+//                                        @Override
+//                                        public void onComplete() {
+//
+//                                        }
+//                                    });
+//                        }
+//                );
 
         Flowable.create(new FlowableOnSubscribe<Integer>() {
             @Override
@@ -684,11 +742,11 @@ public class SwitchDemoFragment extends DaggerFragment implements SwitchDemoCont
 //                .subscribe(result -> {
 //                    ToastUtils.showToast(result);
 //                });
-        mDjiSdkComponent.getMediaFileList().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(e -> {
-                    ToastUtils.showToast(e);
-                });
+//        mDjiSdkComponent.getMediaFileList().subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(e -> {
+//                    ToastUtils.showToast(e);
+//                });
 
 //        mDjiSdkComponent.getMediaFileList().subscribe(result -> {
 //            ToastUtils.showToast("ok");

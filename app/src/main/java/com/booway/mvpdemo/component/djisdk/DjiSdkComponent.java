@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 
+import com.booway.mvpdemo.component.djisdk.DjiSdkResponse.DjiSdkResult;
 import com.booway.mvpdemo.utils.LogUtils;
 
 import org.reactivestreams.Publisher;
@@ -81,10 +82,10 @@ public class DjiSdkComponent implements DjiSdkInterface {
     private final String TAG = "DJI_SDK_COMPONENT";
 
     //可见光相机索引
-    static final int VISUAL_CAMERA_INDEX = 0;
+    public static final int VISUAL_CAMERA_INDEX = 0;
 
     //热成像相机索引
-    static final int THERMAL_CAMERA_INDEX = 1;
+    public static final int THERMAL_CAMERA_INDEX = 1;
 
     private BaseProduct mProduct;
 
@@ -94,7 +95,11 @@ public class DjiSdkComponent implements DjiSdkInterface {
 
     private MediaManager mMediaManager;
 
+    private DJISDKManager mDJISDKManager = DJISDKManager.getInstance();
+
     private MediaManager.FileListState currentFileListState = MediaManager.FileListState.UNKNOWN;
+
+    private boolean isRegistered;
 
 //    private int scheduleState = 0;
 
@@ -131,7 +136,7 @@ public class DjiSdkComponent implements DjiSdkInterface {
      * @return 是否支持多图像流的产品
      */
     public boolean isMultiStreamPlatform() {
-        Model model = DJISDKManager.getInstance().getProduct().getModel();
+        Model model = mProduct.getModel();
         return model != null && (model == Model.INSPIRE_2
                 || model == Model.MATRICE_200
                 || model == Model.MATRICE_210
@@ -146,15 +151,13 @@ public class DjiSdkComponent implements DjiSdkInterface {
      * @return 是否M210的两个相机都已连接
      */
     public boolean isM210TwoCameraConnected() {
-
         Object model = null;
         if (KeyManager.getInstance() != null) {
             model = KeyManager.getInstance().getValue(ProductKey.create(ProductKey.MODEL_NAME));
         }
         if (model != null) {
-            BaseProduct product = DJISDKManager.getInstance().getProduct();
-            if (product != null && (product instanceof Aircraft)) {
-                List<Camera> cameraList = ((Aircraft) product).getCameras();
+            if (mProduct != null && (mProduct instanceof Aircraft)) {
+                List<Camera> cameraList = ((Aircraft) mProduct).getCameras();
                 if ((model == Model.MATRICE_210 || model == Model.MATRICE_210_RTK)) {
                     return (cameraList != null
                             && cameraList.size() == 2
@@ -176,6 +179,26 @@ public class DjiSdkComponent implements DjiSdkInterface {
         }
         return thermalCamera;
     }
+
+    /**
+     * 设置拍摄模式
+     *
+     * @param mode
+     * @return
+     */
+    public Observable<DjiSdkResponse> setCameraMode(SettingsDefinitions.CameraMode mode) {
+        return Observable.create(e -> {
+            getCameraInstance().setMode(mode, djiError -> {
+                if (djiError == null) {
+                    e.onNext(DjiSdkResponse.create(DjiSdkResult.Success));
+                } else {
+                    e.onNext(DjiSdkResponse.create(DjiSdkResult.Failed, djiError));
+                }
+                e.onComplete();
+            });
+        });
+    }
+
 
     /**
      * 是否支持媒体文件下载至本地
@@ -200,43 +223,55 @@ public class DjiSdkComponent implements DjiSdkInterface {
      * @return
      */
     @Override
-    public Flowable<String> Register(Context context) {
-        return Flowable.create(e -> DJISDKManager.getInstance().registerApp(context,
+    public Flowable<DjiSdkResponse> Register(Context context) {
+        return Flowable.create((FlowableEmitter<DjiSdkResponse> e) -> mDJISDKManager.registerApp(context,
                 new DJISDKManager.SDKManagerCallback() {
                     @Override
                     public void onRegister(DJIError djiError) {
                         if (djiError == DJISDKError.REGISTRATION_SUCCESS) {
-                            DJILog.e("App register", DJISDKError.REGISTRATION_SUCCESS.getDescription());
-                            DJISDKManager.getInstance().startConnectionToProduct();
-                            e.onNext("SDK注册成功");
+                            isRegistered = true;
+                            mDJISDKManager.startConnectionToProduct();
+                            DJILog.e(TAG, DJISDKError.REGISTRATION_SUCCESS.getDescription());
+                            DjiSdkResponse result = DjiSdkResponse.create(DjiSdkResult.Success);
+                            result.setConnectionInfo("SDK注册成功!");
+                            e.onNext(result);
                         } else {
-                            e.onNext("SDK注册失败，请检查网络");
+                            e.onNext(DjiSdkResponse.create(DjiSdkResult.Failed, djiError));
                         }
                     }
 
                     @Override
                     public void onProductDisconnect() {
-                        e.onNext("与设备断开连接");
+                        DjiSdkResponse response = DjiSdkResponse.create(DjiSdkResult.Connection);
+                        response.setConnectionInfo("与设备断开连接");
+                        e.onNext(response);
                     }
 
                     @Override
                     public void onProductConnect(BaseProduct baseProduct) {
-                        e.onNext(String.format("设备已连接,连接到设备:%s", baseProduct));
+                        DjiSdkResponse response = DjiSdkResponse.create(DjiSdkResult.Connection);
+                        response.setConnectionInfo(String.format("设备已连接,连接到设备:%s", baseProduct));
+                        e.onNext(response);
                     }
 
                     @Override
                     public void onComponentChange(BaseProduct.ComponentKey componentKey,
                                                   BaseComponent oldComponent,
                                                   BaseComponent newComponent) {
+                        DjiSdkResponse response = DjiSdkResponse.create(DjiSdkResult.Connection);
                         if (newComponent != null) {
                             newComponent.setComponentListener(
-                                    isConnected -> e.onNext("设备连接状态改变，当前状态：" +
-                                            (isConnected == true ? "已连接" : "已断开")));
+                                    isConnected -> {
+                                        response.setConnectionInfo("设备连接状态改变，当前状态：" +
+                                                (isConnected == true ? "已连接" : "已断开"));
+                                        e.onNext(response);
+                                    });
                         }
-                        e.onNext(String.format("设备已切换 key:%s, 之前设备:%s, 当前设备:%s",
+                        response.setConnectionInfo(String.format("设备已切换 key:%s, 之前设备:%s, 当前设备:%s",
                                 componentKey,
                                 oldComponent,
                                 newComponent));
+                        e.onNext(response);
                     }
                 }), BackpressureStrategy.BUFFER);
     }
@@ -248,7 +283,7 @@ public class DjiSdkComponent implements DjiSdkInterface {
      */
     private synchronized BaseProduct getProductInstance() {
         if (null == mProduct) {
-            mProduct = DJISDKManager.getInstance().getProduct();
+            mProduct = mDJISDKManager.getProduct();
         }
         return mProduct;
     }
@@ -276,7 +311,7 @@ public class DjiSdkComponent implements DjiSdkInterface {
 
 
     /**
-     * 拍照事件，拍摄可见光图片
+     * 拍照事件，拍摄可见光图片-0/红外镜头拍照-1
      * 代码示例：
      * mDjiSdkComponent.shootPhoto()
      * .subscribeOn(Schedulers.io())
@@ -289,22 +324,42 @@ public class DjiSdkComponent implements DjiSdkInterface {
      * }
      * });
      */
-    public Observable<String> shootPhoto() {
+    public Observable<DjiSdkResponse> shootPhoto(int cameraIdx) {
         return Observable.create(e -> KeyManager.getInstance()
-                .performAction(CameraKey.create(CameraKey.START_SHOOT_PHOTO, VISUAL_CAMERA_INDEX),
+                .performAction(CameraKey.create(CameraKey.START_SHOOT_PHOTO, cameraIdx),
                         new ActionCallback() {
                             @Override
                             public void onSuccess() {
-                                e.onNext("shoot success");
+                                e.onNext(DjiSdkResponse.create(DjiSdkResult.Success));
                                 e.onComplete();
                             }
 
                             @Override
                             public void onFailure(@NonNull DJIError error) {
-                                e.onNext(error.getDescription());
+                                e.onNext(DjiSdkResponse.create(DjiSdkResult.Failed, error));
                             }
                         }));
     }
+
+    /**
+     * 另一种拍照写法
+     *
+     * @return
+     */
+    public Observable<DjiSdkResponse> startShootPhoto() {
+        return Observable.create(e -> {
+
+            getCameraInstance().startShootPhoto(djiError -> {
+                if (djiError == null) {
+                    e.onNext(DjiSdkResponse.create(DjiSdkResult.Success));
+                } else {
+                    e.onNext(DjiSdkResponse.create(DjiSdkResult.Failed, djiError));
+                }
+                e.onComplete();
+            });
+        });
+    }
+
 
     /**
      * 仅显示左侧云台相机的图像，左侧云台为primaryVideoSource
@@ -357,55 +412,58 @@ public class DjiSdkComponent implements DjiSdkInterface {
     }
 
     /**
-     * 初始化
+     * 初始化MediaManager
+     * 主要对象为可见光管理以及热成像镜头
      */
-    public Observable<Boolean> initMediaManager(boolean isThermalCamera) {
+    public Observable<DjiSdkResponse> initMediaManager(boolean isThermalCamera) {
         return Observable.create(e -> {
             Camera camera = isThermalCamera ? getThermalCameraInstance() : getCameraInstance();
             if (null != camera && camera.isMediaDownloadModeSupported()) {
                 mMediaManager = camera.getMediaManager();
                 if (null != mMediaManager) {
+                    //设置文件列表状态监听
                     mMediaManager.addUpdateFileListStateListener(this.updateFileListStateListener);
                     camera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD,
                             (DJIError cbError) -> {
                                 if (cbError == null) {
                                     if ((mMediaManager.getSDCardFileListState() == MediaManager.FileListState.SYNCING) ||
                                             (mMediaManager.getSDCardFileListState() == MediaManager.FileListState.DELETING)) {
-                                        e.onNext(false);
-                                        DJILog.d(TAG, "Media Manager is busy.");
+                                        cbError.setDescription("Media Manager is busy.");
+                                        e.onNext(DjiSdkResponse.create(DjiSdkResult.Failed, cbError));
                                     } else {
                                         scheduler = mMediaManager.getScheduler();
-                                        e.onNext(true);
-                                        e.onComplete();
-
+                                        DJILog.d("get scheduler completed");
+                                        e.onNext(DjiSdkResponse.create(DjiSdkResult.Success));
                                         DJILog.d(TAG, "Set MediaDownload Mode success.");
                                     }
+                                } else {
+                                    e.onNext(DjiSdkResponse.create(DjiSdkResult.Failed, cbError));
                                 }
+                                e.onComplete();
                             });
                 } else if (null != camera && !camera.isMediaDownloadModeSupported()) {
-                    e.onNext(false);
                     DJILog.d(TAG, "get media manager failed");
                 }
-                e.onNext(false);
                 DJILog.d(TAG, "Media Download Mode not Supported");
             } else {
-                e.onNext(false);
                 DJILog.d(TAG, "Unknow error");
             }
         });
     }
 
     /**
+     * 获取硬件中媒体文件列表
+     *
      * @return
      */
-    public Observable<String> getMediaFileList() {
+    public Observable<DjiSdkResponse> getMediaFileList(boolean isThermalCamera) {
         return Observable.create(e -> {
-            initMediaManager(false).subscribe(bool -> {
-                if (bool) {
-//                    scheduleState = 0;
+            initMediaManager(isThermalCamera).subscribe(response -> {
+                if (response.getResult() == DjiSdkResult.Success) {
                     mMediaManager.refreshFileListOfStorageLocation(SettingsDefinitions.StorageLocation.SDCARD,
                             error -> {
                                 if (error == null) {
+                                    DJILog.d("refresh file success!");
                                     if (currentFileListState != MediaManager.FileListState.INCOMPLETE) {
                                         if (mediaFileList != null)
                                             mediaFileList.clear();
@@ -419,27 +477,60 @@ public class DjiSdkComponent implements DjiSdkInterface {
                                         }
                                         return 0;
                                     });
-
-//                                    scheduler.resume(new CommonCallbacks.CompletionCallback() {
-//                                        @Override
-//                                        public void onResult(DJIError error) {
-//                                            if (error == null) {
-//                                                getThumbnails();
-//                                                getPreviews();
-//                                            }
-//                                        }
-//                                    });
-                                    e.onNext("get media file list success");
+                                    DJILog.d("collections sort completed");
+                                    DjiSdkResponse result = DjiSdkResponse.create(DjiSdkResult.Success);
+                                    result.setMediaFiles(mediaFileList);
+                                    e.onNext(result);
                                     e.onComplete();
                                 } else {
-                                    e.onNext(error.getDescription());
+                                    DJILog.d("refresh file failed!");
+                                    e.onNext(DjiSdkResponse.create(DjiSdkResult.Failed, error));
                                 }
+                                e.onComplete();
                             });
                 } else {
-                    e.onNext("get media file list init manager failed!");
+                    DJILog.d(TAG, response.getDJIError().getDescription());
                 }
             });
         });
+    }
+
+    /**
+     * 获取所有预览图
+     *
+     * @param isThermalCamera
+     * @return
+     */
+    public Observable<DjiSdkResponse> getAllPreview(boolean isThermalCamera) {
+        return Observable.create(e -> getMediaFileList(isThermalCamera).subscribe(response -> {
+            DjiSdkResponse result = DjiSdkResponse.create(DjiSdkResult.Success);
+            if (response.getResult() == DjiSdkResult.Success) {
+                scheduler.resume(djiError -> {
+                    if (djiError == null) {
+                        for (int i = 0; i < mediaFileList.size(); i++) {
+                            FetchMediaTask task = new FetchMediaTask(mediaFileList.get(i),
+                                    FetchMediaTaskContent.PREVIEW, (file, content, error) -> {
+                                if (error == null) {
+                                    result.setTempMediaFile(file);
+                                    e.onNext(result);
+                                } else {
+                                    result.setResult(DjiSdkResult.Failed);
+                                    result.setDJIError(error);
+                                    e.onNext(result);
+                                }
+                            });
+                            scheduler.moveTaskToEnd(task);
+                        }
+                    } else {
+                        result.setResult(DjiSdkResult.Failed);
+                        result.setDJIError(djiError);
+                    }
+                    e.onComplete();
+                });
+            } else {
+                DJILog.d("get media file list error");
+            }
+        }));
     }
 
     private void getThumbnails() {
@@ -485,257 +576,140 @@ public class DjiSdkComponent implements DjiSdkInterface {
         }
     };
 
-    public Observable<String> downloadLastPreviewMediaFile() {
-        return Observable.create(e -> {
-            if (mediaFileList != null) {
-                MediaFile file = mediaFileList.get(mediaFileList.size() - 1);
-                if (file.getPreview() == null) {
-                    file.fetchPreview(new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError == null) {
-                                Bitmap bitmap = file.getThumbnail();
-                                e.onNext(file.getFileName() + "," + ",fetch success," + bitmap.getByteCount());
+//    public Observable<DjiSdkResponse> downloadLastPreviewMediaFile() {
+//        return Observable.create(e -> {
+//            if (mediaFileList != null) {
+//                MediaFile file = mediaFileList.get(mediaFileList.size() - 1);
+//                if (file.getPreview() == null) {
+//                    file.fetchPreview(djiError -> {
+//                        if (djiError == null) {
+//                            Bitmap bitmap = file.getThumbnail();
+//                            e.onNext(file.getFileName() + "," + ",fetch success," + bitmap.getByteCount());
+//
+//
+//                        } else {
+//                            e.onNext(djiError.getDescription());
+//                        }
+//                    });
+//                } else {
+//                    e.onNext(file.getFileName() + "," + " no fectch return");
+//                }
+//            } else {
+//                e.onNext("media file list is null");
+//            }
+//            e.onComplete();
+//        });
+//    }
 
-                            } else {
-                                e.onNext(djiError.getDescription());
-                            }
-                        }
-                    });
-                } else {
-                    e.onNext(file.getFileName() + "," + " no fectch return");
-                }
+    /**
+     * 获取指定MediaFile的缩略图
+     *
+     * @param file
+     * @return
+     */
+    public Observable<DjiSdkResponse> getTheThumBitmap(MediaFile file) {
+        return Observable.create(e -> {
+            if (file.getThumbnail() == null) {
+                file.fetchThumbnail(djiError -> {
+                    if (djiError == null) {
+                        DjiSdkResponse result = DjiSdkResponse.create(DjiSdkResult.Success);
+                        result.setTempMediaFile(file);
+                        e.onNext(result);
+                    } else {
+                        e.onNext(DjiSdkResponse.create(DjiSdkResult.Failed, djiError));
+                    }
+                    e.onComplete();
+                });
             } else {
-                e.onNext("media file list is null");
+                DjiSdkResponse result = DjiSdkResponse.create(DjiSdkResult.Success);
+                result.setTempMediaFile(file);
+                e.onNext(result);
+                e.onComplete();
             }
-            e.onComplete();
         });
     }
 
-    public Observable<String> downloadLastThumMediaFile() {
+    /**
+     * 获取指定MediaFile的预览图
+     *
+     * @param file
+     * @return
+     */
+    public Observable<DjiSdkResponse> getThePreviewBitmap(MediaFile file) {
         return Observable.create(e -> {
-            if (mediaFileList != null) {
-                MediaFile file = mediaFileList.get(mediaFileList.size() - 1);
-                if (file.getThumbnail() == null) {
-                    file.fetchThumbnail(new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError == null) {
-                                Bitmap bitmap = file.getThumbnail();
-                                e.onNext(file.getFileName() + "," + ",fetch success," + bitmap.getByteCount());
-
-                            } else {
-                                e.onNext(djiError.getDescription());
-                            }
-                            e.onComplete();
-                        }
-                    });
-                } else {
-                    e.onNext(file.getFileName() + "," + " no fectch return");
-                }
+            DjiSdkResponse result = DjiSdkResponse.create(DjiSdkResult.Success);
+            if (file.getPreview() == null) {
+                file.fetchPreview(djiError -> {
+                    if (djiError == null) {
+                        result.setTempMediaFile(file);
+                        e.onNext(result);
+                    } else {
+                        result.setResult(DjiSdkResult.Failed);
+                        result.setDJIError(djiError);
+                        e.onNext(result);
+                    }
+                    e.onComplete();
+                });
             } else {
-                e.onNext("media file list is null");
+                result.setTempMediaFile(file);
+                e.onNext(result);
+                e.onComplete();
             }
         });
     }
 
-
-    public Flowable<String> downloadLastMediaFile(String tmpFileName) {
-        return Flowable.create(e -> {
-            getMediaFileList().subscribe(files -> {
-                MediaFile file = mediaFileList.get(mediaFileList.size() - 1);
-                file.fetchFileData(new File(MEDIA_DOWNLOAD_DIR), tmpFileName, new DownloadListener<String>() {
+    /**
+     * 获取媒体文件的原始文件
+     *
+     * @param tmpFileName
+     * @param isThermalCamera
+     * @return
+     */
+    public Observable<DjiSdkResponse> downloadTheOriginMediaFileSource(MediaFile mediaFile,
+                                                                       String tmpFileName,
+                                                                       boolean isThermalCamera) {
+        return Observable.create(e -> {
+            DjiSdkResponse result = DjiSdkResponse.create(DjiSdkResult.Success);
+            if (mediaFile != null) {
+                mediaFile.fetchFileData(new File(MEDIA_DOWNLOAD_DIR), tmpFileName, new DownloadListener<String>() {
                     @Override
                     public void onStart() {
-                        e.onNext("start");
                         DJILog.d(TAG, "start");
                     }
 
                     @Override
                     public void onRateUpdate(long total, long current, long persize) {
-                        e.onNext("p1:" + total + ",p2:" + current + "p3:" + persize);
                         DJILog.d(TAG, "p1:" + total + ",p2:" + current + "p3:" + persize);
                     }
 
                     @Override
                     public void onProgress(long total, long current) {
-                        e.onNext("p1:" + total + ",p2:" + current);
                         DJILog.d(TAG, "p1:" + total + ",p2:" + current);
                     }
 
                     @Override
                     public void onSuccess(String filePath) {
-                        getProductInstance().getCamera()
-                                .setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, null);
-                        e.onNext("success:" + filePath);
+                        e.onNext(result);
                         e.onComplete();
                         DJILog.d(TAG, "success:" + filePath);
                     }
 
                     @Override
                     public void onFailure(DJIError djiError) {
-                        e.onNext("error:" + djiError.getDescription());
+                        result.setDJIError(djiError);
+                        result.setResult(DjiSdkResult.Failed);
+                        e.onNext(result);
                         DJILog.d(TAG, "error:" + djiError.getDescription());
                     }
                 });
-            });
-        }, BackpressureStrategy.BUFFER);
-//        getMediaFileList().doOnSuccess(fileList->{
-//            mediaFileList=fileList;
-//        }).flatMap(new Function<List<MediaFile>, MaybeSource<String>>() {
-//            @Override
-//            public MaybeSource<String> apply(List<MediaFile> files) throws Exception {
-//                return Flowable.create((FlowableEmitter<Object> e) ->{
-//                    MediaFile file = files.get(mediaFileList.size() - 1);
-//                    file.fetchFileData(new File(MEDIA_DOWNLOAD_DIR), tmpFileName, new DownloadListener<String>() {
-//                        @Override
-//                        public void onStart() {
-//                            e.onNext("start");
-//                            LogUtils.d(TAG, "start");
-//                        }
-//
-//                        @Override
-//                        public void onRateUpdate(long total, long current, long persize) {
-//                            e.onNext("p1:" + total + ",p2:" + current + "p3:" + persize);
-//                            LogUtils.d(TAG, "p1:" + total + ",p2:" + current + "p3:" + persize);
-//                        }
-//
-//                        @Override
-//                        public void onProgress(long total, long current) {
-//                            e.onNext("p1:" + total + ",p2:" + current);
-//                            LogUtils.d(TAG, "p1:" + total + ",p2:" + current);
-//                        }
-//
-//                        @Override
-//                        public void onSuccess(String filePath) {
-//                            getProductInstance().getCamera()
-//                                    .setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, null);
-//                            e.onNext("success:" + filePath);
-//                            LogUtils.d(TAG, "success:" + filePath);
-//                        }
-//
-//                        @Override
-//                        public void onFailure(DJIError djiError) {
-//                            e.onNext("error:" + djiError.getDescription());
-//                            LogUtils.d(TAG, "error:" + djiError.getDescription());
-//                        }
-//                    });
-//                },BackpressureStrategy.BUFFER);
-//            }
-//        });
-//        return null;
+            } else {
+                result.setResult(DjiSdkResult.Failed);
+                e.onNext(result);
+                e.onComplete();
+            }
+        });
     }
 
-
-    /**
-     * 下载最近一张相机SD卡媒体文件至本地
-     *
-     * @param tmpFileName 临时文件命名
-     * @return
-     */
-//    public Flowable<String> downloadMediaFile(String tmpFileName) {
-//        return Flowable.create(e -> {
-//            if (null != getCameraInstance() && getCameraInstance().isMediaDownloadModeSupported()) {
-//                MediaManager mediaManager = getCameraInstance().getMediaManager();
-//                if (null != mediaManager) {
-//                    getCameraInstance().setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD, cbError -> {
-//                        if (cbError == null) {
-//                            e.onNext("Set cameraMode success");
-//                            LogUtils.d(TAG, "Set cameraMode success");
-//                            if ((mediaManager.getSDCardFileListState() == MediaManager.FileListState.SYNCING) ||
-//                                    (mediaManager.getSDCardFileListState() == MediaManager.FileListState.DELETING)) {
-//                                e.onNext("Media Manager is busy.");
-//                                LogUtils.d(TAG, "Media Manager is busy.");
-//                            } else {
-//                                mediaManager.refreshFileListOfStorageLocation(SettingsDefinitions.StorageLocation.SDCARD, new CommonCallbacks.CompletionCallback() {
-//                                    @Override
-//                                    public void onResult(DJIError djiError) {
-//                                        if (null == djiError) {
-//                                            List<MediaFile> djiMedias = mediaManager.getSDCardFileListSnapshot();
-//
-//                                            if (null != djiMedias) {
-//                                                if (!djiMedias.isEmpty()) {
-//                                                    media = djiMedias.get(djiMedias.size() - 1);
-//                                                    if (isCameraModuleAvailable()
-//                                                            && media != null
-//                                                            && mediaManager != null) {
-//                                                        media.fetchFileData(new File(MEDIA_DOWNLOAD_DIR), tmpFileName, new DownloadListener<String>() {
-//                                                            @Override
-//                                                            public void onStart() {
-//                                                                e.onNext("start");
-//                                                                LogUtils.d(TAG, "start");
-//                                                            }
-//
-//                                                            @Override
-//                                                            public void onRateUpdate(long l, long l1, long l2) {
-//                                                                e.onNext("p1:" + l + ",p2:" + l1 + "p3:" + l2);
-//                                                                LogUtils.d(TAG, "p1:" + l + ",p2:" + l1 + "p3:" + l2);
-//                                                            }
-//
-//                                                            @Override
-//                                                            public void onProgress(long l, long l1) {
-//                                                                e.onNext("p1:" + l + ",p2:" + l1);
-//                                                                LogUtils.d(TAG, "p1:" + l + ",p2:" + l1);
-//                                                            }
-//
-//                                                            @Override
-//                                                            public void onSuccess(String s) {
-//
-//                                                                getProductInstance()
-//                                                                        .getCamera()
-//                                                                        .setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, null);
-//                                                                e.onNext("success:" + s);
-//                                                                LogUtils.d(TAG, "success:" + s);
-//                                                            }
-//
-//                                                            @Override
-//                                                            public void onFailure(DJIError djiError) {
-//                                                                e.onNext("error:" + djiError.getDescription());
-//                                                                LogUtils.d(TAG, "error:" + djiError.getDescription());
-//                                                            }
-//                                                        });
-//                                                    }
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                });
-//                            }
-//                        } else {
-//                            e.onNext("Set cameraMode failed");
-//                        }
-//                    });
-//                }
-//
-//            } else if (null != getCameraInstance()
-//                    && !getCameraInstance().isMediaDownloadModeSupported()) {
-//                e.onNext("Media Download Mode not Supported");
-//            }
-//        }, BackpressureStrategy.BUFFER);
-//    }
-
-    /**
-     * 设置获取文件的具体方式及顺序
-     *
-     * @param mediaManager
-     */
-
-//    private void setMedia(MediaManager mediaManager) {
-//        if (isMediaManagerAvailable() && mediaManager != null) {
-//            mediaManager.refreshFileListOfStorageLocation(SettingsDefinitions.StorageLocation.SDCARD,
-//                    djiError -> {
-//                        if (null == djiError) {
-//                            List<MediaFile> djiMedias = mediaManager.getSDCardFileListSnapshot();
-//
-//                            if (null != djiMedias) {
-//                                if (!djiMedias.isEmpty()) {
-//                                    media = djiMedias.get(djiMedias.size() - 1);
-//                                }
-//                            }
-//                        }
-//                    });
-//        }
-//    }
 
     /**
      * 获取飞机当前的经纬度信息
@@ -750,14 +724,24 @@ public class DjiSdkComponent implements DjiSdkInterface {
      * <p>
      * });
      */
-    public Flowable<AirCraftLocationBean> getAircraftLocation() {
-        return Flowable.create(e -> getAircraftInstance().getFlightController()
-                .setStateCallback(flightControllerState -> {
-                    LocationCoordinate3D location = flightControllerState.getAircraftLocation();
-                    GPSSignalLevel signalLevel = flightControllerState.getGPSSignalLevel();
-                    AirCraftLocationBean bean = new AirCraftLocationBean(location, signalLevel);
-                    e.onNext(bean);
-                }), BackpressureStrategy.BUFFER);
+    public Flowable<DjiSdkResponse> getAircraftLocation() {
+        return Flowable.create(e -> {
+            DjiSdkResponse result = DjiSdkResponse.create(DjiSdkResult.Success);
+            if (getAircraftInstance().getFlightController() == null) {
+                result.setResult(DjiSdkResult.Failed);
+                e.onNext(result);
+                e.onComplete();
+            } else {
+                getAircraftInstance().getFlightController()
+                        .setStateCallback(flightControllerState -> {
+                            LocationCoordinate3D coordinate3D = flightControllerState.getAircraftLocation();
+                            GPSSignalLevel signalLevel = flightControllerState.getGPSSignalLevel();
+                            AirCraftLocationBean location = new AirCraftLocationBean(coordinate3D, signalLevel);
+                            result.setLocationBean(location);
+                            e.onNext(result);
+                        });
+            }
+        }, BackpressureStrategy.BUFFER);
     }
 
     /**

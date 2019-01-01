@@ -42,11 +42,25 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:text="@string/showThumbView"/>
+    <Button
+        android:id="@+id/btnPreview"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/showPreview"/>
+    <Button
+        android:id="@+id/shoot"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="@string/shootPhoto"/>
     <ImageView
         android:background="#F00"
         android:id="@+id/ThumbView"
-        android:layout_width="50dp"
-        android:layout_height="50dp" />
+        android:layout_width="100dp"
+        android:layout_height="100dp" />
+    <ImageView
+        android:id="@+id/PreviewView"
+        android:layout_width="300dp"
+        android:layout_height="300dp" />
 
     <GridView
         android:id="@+id/gridView"

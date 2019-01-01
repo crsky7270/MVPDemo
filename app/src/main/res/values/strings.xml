@@ -32,4 +32,6 @@
     <string name="video_feeder_left_fpv">Left+FPV</string>
     <string name="video_feeder_left_right">Left+Right</string>
     <string name="component_listview_video_feeder">Video Feeder View</string>
+    <string name="shootPhoto">拍照</string>
+    <string name="showPreview">显示预览图</string>
 </resources>

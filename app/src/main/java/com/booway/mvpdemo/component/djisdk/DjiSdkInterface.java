@@ -13,6 +13,8 @@ import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 
+import static dji.common.camera.SettingsDefinitions.*;
+
 /**
  * 创建人：wandun
  * 创建时间：2018/12/17
@@ -21,9 +23,11 @@ import io.reactivex.Observable;
 
 public interface DjiSdkInterface {
 
-    Observable<Boolean> initMediaManager(boolean isThermalCamera);
+    Observable<DjiSdkResponse> setCameraMode(CameraMode mode);
 
-    public Flowable<String> Register(Context context);
+    Observable<DjiSdkResponse> initMediaManager(boolean isThermalCamera);
+
+    public Flowable<DjiSdkResponse> Register(Context context);
 
     public boolean isAircraftConnected();
 
@@ -37,17 +41,19 @@ public interface DjiSdkInterface {
 
     boolean isMediaManagerAvailable();
 
-    Observable<String> shootPhoto();
+    Observable<DjiSdkResponse> shootPhoto(int cameraIdx);
+
+    Observable<DjiSdkResponse> startShootPhoto();
 
     void showLeftCameraVideoSource();
 
     void showRightCameraVideoSource();
 
-    Observable<String> downloadLastThumMediaFile();
+    Observable<DjiSdkResponse> getTheThumBitmap(MediaFile file);
 
-    Observable<String> getMediaFileList();
+    Observable<DjiSdkResponse> getMediaFileList(boolean isThermalCamera);
 
-    Flowable<AirCraftLocationBean> getAircraftLocation();
+    Flowable<DjiSdkResponse> getAircraftLocation();
 
     Observable<Boolean> startCalibration();
 
@@ -67,7 +73,7 @@ public interface DjiSdkInterface {
 
     Observable<Boolean> isDigitalZoomSupproted();
 
-    Observable<String> startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection direction);
+    Observable<String> startContinuousOpticalZoom(ZoomDirection direction);
 
     Observable<String> stopContinuousOpticalZoom();
 
@@ -81,6 +87,10 @@ public interface DjiSdkInterface {
 
     Observable<String> setFocusTarget(PointF point);
 
-    Observable<String> downloadLastPreviewMediaFile();
+//    Observable<DjiSdkResponse> downloadLastPreviewMediaFile();
+
+    Observable<DjiSdkResponse> getThePreviewBitmap(MediaFile file);
+
+    Observable<DjiSdkResponse> getAllPreview(boolean isThermalCamera);
 
 }

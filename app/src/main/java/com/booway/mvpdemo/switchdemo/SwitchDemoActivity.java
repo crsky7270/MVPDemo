@@ -16,12 +16,14 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.booway.mvpdemo.DemoList.DemoListActivity;
 import com.booway.mvpdemo.DemoList.DemoListFragment;
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
+import com.booway.mvpdemo.component.djisdk.DjiSdkResponse;
 import com.booway.mvpdemo.utils.ActivityUtils;
 import com.booway.mvpdemo.utils.LogUtils;
 import com.booway.mvpdemo.utils.ToastUtils;
@@ -73,6 +75,9 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
 
     @BindView(R.id.coordinatorLayout)
     CoordinatorLayout mCoordinatorLayout;
+
+    @BindView(R.id.mainText)
+    TextView mTextView;
 
     @Inject
     DjiSdkComponent mDjiSdkComponent;
@@ -128,7 +133,6 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
                     }
                 }
         );
-
 
 //        Observable.create((ObservableOnSubscribe<Integer>) e -> {
 //            for (int i = 1; i <= 5; i++) {
@@ -263,8 +267,19 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
                     .flatMap(context -> mDjiSdkComponent.Register(context))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(s -> {
-                        ToastUtils.showToast(s);
+                    .subscribe(response -> {
+                        switch (response.getResult()) {
+                            case Success:
+                                mTextView.setText("*************success**************");
+                                ToastUtils.showToast(response.getConnectionInfo());
+                                break;
+                            case Failed:
+                                ToastUtils.showToast(response.getDJIError().getDescription());
+                                break;
+                            case Connection:
+                                ToastUtils.showToast(response.getConnectionInfo());
+                                break;
+                        }
                     });
         }
     }
@@ -276,63 +291,6 @@ public class SwitchDemoActivity extends DaggerAppCompatActivity {
             }
         });
     }
-
-//    private void startSDKRegistration() {
-//        if (isRegistrationInProgress.compareAndSet(false, true)) {
-//            AsyncTask.execute(new Runnable() {
-//                @Override
-//                public void run() {
-//                    showToast( "registering, pls wait...");
-//                    DJISDKManager.getInstance().registerApp(getApplicationContext(), new DJISDKManager.SDKManagerCallback() {
-//                        @Override
-//                        public void onRegister(DJIError djiError) {
-//                            if (djiError == DJISDKError.REGISTRATION_SUCCESS) {
-//                                DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.getDescription());
-//                                DJISDKManager.getInstance().startConnectionToProduct();
-//                                showToast("Register Success");
-//                            } else {
-//                                showToast( "Register sdk fails, check network is available");
-//                            }
-//                            Log.v(TAG, djiError.getDescription());
-//                        }
-//
-//                        @Override
-//                        public void onProductDisconnect() {
-//                            Log.d(TAG, "onProductDisconnect");
-//                            showToast("Product Disconnected");
-//
-//                        }
-//                        @Override
-//                        public void onProductConnect(BaseProduct baseProduct) {
-//                            Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
-//                            showToast("Product Connected");
-//
-//                        }
-//                        @Override
-//                        public void onComponentChange(BaseProduct.ComponentKey componentKey, BaseComponent oldComponent,
-//                                                      BaseComponent newComponent) {
-//
-//                            if (newComponent != null) {
-//                                newComponent.setComponentListener(new BaseComponent.ComponentListener() {
-//
-//                                    @Override
-//                                    public void onConnectivityChange(boolean isConnected) {
-//                                        Log.d(TAG, "onComponentConnectivityChanged: " + isConnected);
-//                                    }
-//                                });
-//                            }
-//                            Log.d(TAG,
-//                                    String.format("onComponentChange key:%s, oldComponent:%s, newComponent:%s",
-//                                            componentKey,
-//                                            oldComponent,
-//                                            newComponent));
-//
-//                        }
-//                    });
-//                }
-//            });
-//        }
-//    }
 
     @Override
     protected void onNewIntent(Intent intent) {

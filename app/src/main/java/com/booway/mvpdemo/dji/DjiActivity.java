@@ -20,6 +20,7 @@ import android.widget.ImageView;
 
 import com.booway.mvpdemo.R;
 import com.booway.mvpdemo.component.djisdk.DjiSdkComponent;
+import com.booway.mvpdemo.component.djisdk.DjiSdkResponse;
 import com.booway.mvpdemo.utils.ToastUtils;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 
-public class DjiActivity extends DaggerAppCompatActivity  {
+public class DjiActivity extends DaggerAppCompatActivity {
 
     @Inject
     DjiSdkComponent mDjiSdkComponent;
@@ -139,8 +140,9 @@ public class DjiActivity extends DaggerAppCompatActivity  {
 //                .subscribe(msg -> {
 //                    ToastUtils.showToast(msg.toString());
 //                });
-        mDjiSdkComponent.shootPhoto().subscribe(e->{
-           ToastUtils.showToast(e);
+        mDjiSdkComponent.shootPhoto(DjiSdkComponent.VISUAL_CAMERA_INDEX).subscribe(e -> {
+            if (e.getResult() != DjiSdkResponse.DjiSdkResult.Success)
+                ToastUtils.showToast(e.getDJIError().getDescription());
         });
 
 //        mDjiSdkComponent.getFocusTarget()
